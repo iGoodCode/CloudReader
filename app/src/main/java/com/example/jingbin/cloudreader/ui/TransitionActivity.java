@@ -20,6 +20,7 @@ import java.lang.ref.WeakReference;
 import java.util.Random;
 
 /**
+ *  Transition 过度页
  * @author jingbin
  */
 public class TransitionActivity extends AppCompatActivity {
@@ -33,7 +34,9 @@ public class TransitionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_transition);
         // 后台返回时可能启动这个页面 http://blog.csdn.net/jianiuqi/article/details/54091181
+//       flag_activity_brought_to_front
         if ((getIntent().getFlags() & Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT) != 0) {
+
             finish();
             return;
         }
@@ -44,6 +47,7 @@ public class TransitionActivity extends AppCompatActivity {
         int i = new Random().nextInt(ConstantsImageUrl.TRANSITION_URLS.length);
         // 先显示默认图
         mBinding.ivDefultPic.setImageDrawable(CommonUtils.getDrawable(R.drawable.img_transition_default));
+//        seachal 再替换图片
         Glide.with(this)
                 .load(ConstantsImageUrl.TRANSITION_URLS[i])
                 .placeholder(R.drawable.img_transition_default)

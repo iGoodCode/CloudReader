@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
+    buildToolsVersion '28.0.2'
     defaultConfig {
         applicationId "com.example.jingbin.cloudreader"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -29,21 +29,21 @@ android {
 
     // 注释下面代码(签名配置)
     signingConfigs {
-        if (propertyHaveSigningConfigs) {
-            debug {
-                storeFile file(pStoreFile)
-                storePassword pStorePassword
-                keyAlias pKeyAlias
-                keyPassword pKeyPassword
-            }
-
-            release {
-                storeFile file(pStoreFile)
-                storePassword pStorePassword
-                keyAlias pKeyAlias
-                keyPassword pKeyPassword
-            }
-        }
+//        if (propertyHaveSigningConfigs) {
+//            debug {
+//                storeFile file(pStoreFile)
+//                storePassword pStorePassword
+//                keyAlias pKeyAlias
+//                keyPassword pKeyPassword
+//            }
+//
+//            release {
+//                storeFile file(pStoreFile)
+//                storePassword pStorePassword
+//                keyAlias pKeyAlias
+//                keyPassword pKeyPassword
+//            }
+//        }
     }
 
     compileOptions {
