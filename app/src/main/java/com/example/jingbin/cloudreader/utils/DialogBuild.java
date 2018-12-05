@@ -2,15 +2,25 @@ package com.example.jingbin.cloudreader.utils;
 
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.AppCompatEditText;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
 import com.example.jingbin.cloudreader.R;
+import com.example.jingbin.cloudreader.bean.wanandroid.LoginBean;
 import com.example.jingbin.cloudreader.data.UserUtil;
+import com.example.jingbin.cloudreader.data.model.LoginModel;
 import com.example.jingbin.cloudreader.data.room.Injection;
 import com.example.jingbin.cloudreader.data.room.User;
 import com.example.jingbin.cloudreader.data.room.UserDataCallback;
+import com.example.jingbin.cloudreader.http.HttpClient;
 import com.example.jingbin.cloudreader.view.OnLoginListener;
+
+import rx.Observer;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 /**
  * @author jingbin
@@ -21,15 +31,23 @@ import com.example.jingbin.cloudreader.view.OnLoginListener;
 public class DialogBuild {
 
     /**
-     * 显示单行文字的AlertDialog
+     * 显示自定义布局
      */
-    public static void show(View v, String title, DialogInterface.OnClickListener clickListener) {
+    public static void showCustom(View v, String content, String buttonText,DialogInterface.OnClickListener clickListener) {
         AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
         View view = View.inflate(v.getContext(), R.layout.title_douban_top, null);
         TextView titleTop = view.findViewById(R.id.title_top);
-        titleTop.setText(title);
+        titleTop.setText(content);
         builder.setView(view);
-        builder.setPositiveButton("查看详情", clickListener::onClick);
+        builder.setPositiveButton(buttonText, clickListener);
+        builder.show();
+    }
+
+    public static void show(View v, String message, String buttonText, DialogInterface.OnClickListener clickListener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
+        builder.setTitle("提示");
+        builder.setMessage(message);
+        builder.setPositiveButton(buttonText, clickListener);
         builder.show();
     }
 
@@ -85,9 +103,11 @@ public class DialogBuild {
                     break;
                 case 1:
                     if (isLogin) {
-                        Injection.get().deleteAllData();
-                        UserUtil.handleLoginFailure();
-                        ToastUtil.showToastLong("退出成功");
+                        new LoginModel().logout(() -> {
+                            Injection.get().deleteAllData();
+                            UserUtil.handleLoginFailure();
+                            ToastUtil.showToastLong("退出成功");
+                        });
                     } else {
                         listener.loginWanAndroid();
                     }
@@ -97,6 +117,45 @@ public class DialogBuild {
             }
         });
         builder.show();
+    }
+
+    /**
+     * 编辑收藏网址
+     */
+    public static void show(View v, String name, String link, OnEditClickListener listener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
+        builder.setTitle("编辑");
+        View inflate = View.inflate(v.getContext(), R.layout.dialog_eidt_url, null);
+        builder.setView(inflate);
+        AppCompatEditText etName = inflate.findViewById(R.id.et_name);
+        AppCompatEditText etLink = inflate.findViewById(R.id.et_link);
+        if (!TextUtils.isEmpty(name)) {
+            etName.setText(name);
+            etName.setSelection(name.length());
+        }
+        etLink.setText(link);
+        builder.setNegativeButton("取消", null);
+        builder.setPositiveButton("编辑完成", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String name = etName.getText().toString().trim();
+                String link = etLink.getText().toString().trim();
+                if (TextUtils.isEmpty(name)) {
+                    ToastUtil.showToastLong("请输入名称");
+                    return;
+                }
+                if (TextUtils.isEmpty(link)) {
+                    ToastUtil.showToastLong("请输入链接");
+                    return;
+                }
+                listener.onClick(name, link);
+            }
+        });
+        builder.show();
+    }
+
+    public interface OnEditClickListener {
+        void onClick(String name, String link);
     }
 
 }

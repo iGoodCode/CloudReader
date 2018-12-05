@@ -1,6 +1,5 @@
 package com.example.jingbin.cloudreader.adapter;
 
-import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +9,7 @@ import com.example.jingbin.cloudreader.base.baseadapter.BaseRecyclerViewAdapter;
 import com.example.jingbin.cloudreader.base.baseadapter.BaseRecyclerViewHolder;
 import com.example.jingbin.cloudreader.bean.GankIoDataBean;
 import com.example.jingbin.cloudreader.databinding.ItemAndroidBinding;
-import com.example.jingbin.cloudreader.utils.ImgLoadUtil;
+import com.example.jingbin.cloudreader.utils.ImageLoadUtil;
 import com.example.jingbin.cloudreader.view.webview.WebViewActivity;
 
 /**
@@ -20,11 +19,6 @@ import com.example.jingbin.cloudreader.view.webview.WebViewActivity;
 public class GankAndroidAdapter extends BaseRecyclerViewAdapter<GankIoDataBean.ResultBean> {
 
     private boolean isAll = false;
-    private Context context;
-
-    public GankAndroidAdapter(Context context) {
-        this.context = context;
-    }
 
     public void setAllType(boolean isAll) {
         this.isAll = isAll;
@@ -48,7 +42,7 @@ public class GankAndroidAdapter extends BaseRecyclerViewAdapter<GankIoDataBean.R
             if (isAll && "福利".equals(object.getType())) {
                 binding.ivAllWelfare.setVisibility(View.VISIBLE);
                 binding.llWelfareOther.setVisibility(View.GONE);
-                ImgLoadUtil.displayEspImage(object.getUrl(), binding.ivAllWelfare, 1);
+                ImageLoadUtil.displayEspImage(object.getUrl(), binding.ivAllWelfare, 1);
             } else {
                 binding.ivAllWelfare.setVisibility(View.GONE);
                 binding.llWelfareOther.setVisibility(View.VISIBLE);
@@ -67,7 +61,7 @@ public class GankAndroidAdapter extends BaseRecyclerViewAdapter<GankIoDataBean.R
                     && object.getImages().size() > 0
                     && !TextUtils.isEmpty(object.getImages().get(0))) {
                 binding.ivAndroidPic.setVisibility(View.VISIBLE);
-                ImgLoadUtil.displayGif(object.getImages().get(0), binding.ivAndroidPic);
+                ImageLoadUtil.displayGif(object.getImages().get(0), binding.ivAndroidPic);
                 //                Glide.with(context).load(object.getImages().get(0))
 //                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
 //                        .placeholder(R.drawable.img_one_bi_one)
@@ -76,15 +70,12 @@ public class GankAndroidAdapter extends BaseRecyclerViewAdapter<GankIoDataBean.R
             } else {
                 binding.ivAndroidPic.setVisibility(View.GONE);
             }
+            binding.llAll.setOnClickListener(v -> WebViewActivity.loadUrl(v.getContext(), object.getUrl(), object.getDesc()));
 
             binding.setResultsBean(object);
             binding.setCommand(GankAndroidAdapter.this);
             binding.executePendingBindings();
         }
 
-    }
-
-    public void openDetail(GankIoDataBean.ResultBean object) {
-        WebViewActivity.loadUrl(context, object.getUrl(), object.getDesc());
     }
 }

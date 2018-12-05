@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
@@ -9,9 +10,11 @@
 
         <variable
             name="bean"
-            type="com.example.jingbin.cloudreader.bean.wanandroid.HomeListBean.DataBean.DatasBean" />
+            type="com.example.jingbin.cloudreader.bean.wanandroid.ArticlesBean" />
 
         <import type="android.text.Html" />
+
+        <import type="android.text.TextUtils" />
 
         <import type="android.view.View" />
     </data>
@@ -24,84 +27,117 @@
             android:id="@+id/ll_item_top"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/ripple_joke_item_bg"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
             android:onClick="@{()->adapter.openDetail(bean)}"
             android:padding="8dp">
 
-            <TextView
-                android:id="@+id/textView3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@{bean.author}"
-                android:textColor="@color/colorSubtitle"
-                android:textSize="13sp" />
-
-            <TextView
-                android:id="@+id/textView4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:onClick="@{()->adapter.openArticleList(bean)}"
-                android:paddingBottom="1dp"
-                android:paddingLeft="4dp"
-                android:paddingRight="4dp"
-                android:paddingTop="1dp"
-                android:text="@{bean.chapterName}"
-                android:textColor="@color/colorContent"
-                android:textSize="13sp"
-                android:visibility="@{adapter.isNoShowChapterName?View.GONE:View.VISIBLE}" />
-
             <RelativeLayout
-                android:id="@+id/rl_text"
-                android:layout_width="match_parent"
+                android:id="@+id/rl_top"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/textView3"
-                android:layout_marginTop="8dp"
-                android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/textView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_toLeftOf="@+id/vb_collect"
-                    android:lineSpacingExtra="4dp"
-                    android:text="@{Html.fromHtml(bean.title)}"
-                    android:textColor="@color/colorContent"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
+                <ImageView
+                    android:id="@+id/iv_new"
+                    android:layout_width="40dp"
+                    android:layout_height="25dp"
+                    android:src="@drawable/icon_new"
+                    android:visibility="@{bean.fresh?View.VISIBLE:View.GONE}" />
 
-                <CheckBox
-                    android:id="@+id/vb_collect"
+                <TextView
+                    android:id="@+id/textView4"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="5dp"
-                    android:button="@drawable/selector_collect_check"
-                    android:checked="@{adapter.isCollectList ? true : bean.collect}"
-                    android:gravity="center" />
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:onClick="@{()->adapter.openArticleList(bean)}"
+                    android:paddingBottom="2dp"
+                    android:paddingLeft="7dp"
+                    android:paddingRight="7dp"
+                    android:paddingTop="2dp"
+                    android:text="@{Html.fromHtml(bean.chapterName)}"
+                    android:textColor="@color/colorContent"
+                    android:textSize="13sp"
+                    android:visibility="@{adapter.isNoShowChapterName?View.GONE:View.VISIBLE}"
+                    tools:targetApi="lollipop"
+                    tools:text="技术博客" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rl_content"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/rl_top">
+
+                <ImageView
+                    android:id="@+id/iv_image"
+                    android:layout_width="60dp"
+                    android:layout_height="78dp"
+                    android:layout_marginRight="8dp"
+                    android:defaultPicType="@{1}"
+                    android:displayFadeImage="@{bean.envelopePic}"
+                    android:scaleType="centerCrop"
+                    android:visibility="@{bean.isShowImage?View.VISIBLE:View.GONE}"
+                    tools:background="@color/colorLine" />
+
+                <TextView
+                    android:id="@+id/tv_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="7dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_toRightOf="@+id/iv_image"
+                    android:lineSpacingExtra="4dp"
+                    android:text="@{Html.fromHtml(bean.title)}"
+                    android:textColor="@color/colorContent"
+                    android:textSize="14sp"
+                    tools:text="支付宝" />
             </RelativeLayout>
 
             <TextView
                 android:id="@+id/textView2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_below="@+id/rl_text"
-                android:layout_marginTop="15dp"
+                android:layout_below="@+id/rl_content"
+                android:layout_marginTop="13dp"
                 android:text="@{bean.niceDate}"
                 android:textColor="@color/colorSubtitle"
-                android:textSize="11sp" />
+                android:textSize="11sp"
+                tools:text="2010-10-10" />
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/rl_content"
+                android:layout_marginTop="13dp"
+                android:layout_toEndOf="@+id/textView2"
+                android:text="@{@string/string_dian + bean.author}"
+                android:textColor="@color/colorSubtitle"
+                android:textSize="11sp"
+                tools:text="jingbin" />
+
+            <CheckBox
+                android:id="@+id/vb_collect"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_below="@+id/rl_content"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginTop="3dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:button="@drawable/selector_collect_check"
+                android:checked="@{adapter.isCollectList ? true : bean.collect}"
+                android:gravity="center" />
 
         </RelativeLayout>
 
         <View
             android:layout_width="match_parent"
-            android:layout_height="5dp"
+            android:layout_height="1px"
             android:layout_below="@+id/ll_item_top"
-            android:background="@color/color_page_bg" />
+            android:background="@color/colorHomeLine" />
     </RelativeLayout>
 </layout>

@@ -234,7 +234,13 @@ public abstract class BaseHeaderActivity<HV extends ViewDataBinding, SV extends 
 //        bindingTitleView.tbBaseTitle.setTitleTextAppearance(this, R.style.ToolBar_Title);
 //        bindingTitleView.tbBaseTitle.setSubtitleTextAppearance(this, R.style.Toolbar_SubTitle);
         bindingTitleView.tbBaseTitle.setOverflowIcon(ContextCompat.getDrawable(this, R.drawable.actionbar_more));
-        bindingTitleView.tbBaseTitle.setNavigationOnClickListener(v -> onBackPressed());
+        bindingTitleView.tbBaseTitle.setNavigationOnClickListener(v -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                finishAfterTransition();
+            } else {
+                finish();
+            }
+        });
         bindingTitleView.tbBaseTitle.setOnMenuItemClickListener(item -> {
             switch (item.getItemId()) {
                 case R.id.actionbar_more:// 更多信息
@@ -443,18 +449,22 @@ public abstract class BaseHeaderActivity<HV extends ViewDataBinding, SV extends 
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         if (this.mCompositeSubscription != null && mCompositeSubscription.hasSubscriptions()) {
             this.mCompositeSubscription.unsubscribe();
         }
         if (changeBounds != null) {
-            changeBounds.removeListener(null);
+            changeBounds.addListener(null);
             changeBounds.removeTarget(setHeaderPicView());
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 getWindow().setSharedElementEnterTransition(null);
                 getWindow().setSharedElementReturnTransition(null);
             }
         }
+        if (mAnimationDrawable != null) {
+            mAnimationDrawable.stop();
+            mAnimationDrawable = null;
+        }
+        super.onDestroy();
     }
 
     public void removeSubscription() {

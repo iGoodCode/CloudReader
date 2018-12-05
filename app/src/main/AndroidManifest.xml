@@ -7,8 +7,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <!-- bugly start -->
     <uses-permission android:name="android.permission.READ_LOGS" />
 
@@ -60,6 +60,8 @@
             android:theme="@style/ViewBigPicTheme" />
         <activity
             android:name=".view.webview.WebViewActivity"
+            android:configChanges="orientation|screenSize"
+            android:hardwareAccelerated="true"
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.movie.DoubanTopActivity"
@@ -89,6 +91,9 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".ui.wan.child.ArticleListActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.wan.child.MyCollectActivity"
             android:screenOrientation="portrait" />
     </application>
 

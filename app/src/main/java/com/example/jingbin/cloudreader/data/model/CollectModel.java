@@ -1,6 +1,5 @@
 package com.example.jingbin.cloudreader.data.model;
 
-import com.example.jingbin.cloudreader.base.BaseActivity;
 import com.example.jingbin.cloudreader.bean.wanandroid.HomeListBean;
 import com.example.jingbin.cloudreader.http.HttpClient;
 import com.example.jingbin.cloudreader.viewmodel.wan.WanNavigator;
@@ -17,15 +16,6 @@ import rx.schedulers.Schedulers;
  */
 
 public class CollectModel {
-
-    private BaseActivity activity;
-
-    public CollectModel() {
-    }
-
-    public CollectModel(BaseActivity activity) {
-        this.activity = activity;
-    }
 
     /**
      * 收藏
@@ -52,9 +42,6 @@ public class CollectModel {
                         }
                     }
                 });
-        if (activity != null) {
-            activity.addSubscription(subscribe);
-        }
     }
 
     /**
@@ -95,9 +82,6 @@ public class CollectModel {
                         }
                     }
                 });
-        if (activity != null) {
-            activity.addSubscription(subscribe);
-        }
     }
 
     /**
@@ -125,9 +109,86 @@ public class CollectModel {
                         }
                     }
                 });
-        if (activity != null) {
-            activity.addSubscription(subscribe);
-        }
     }
 
+    /**
+     * 收藏url
+     */
+    public void collectUrl(String name, String link, WanNavigator.OnCollectNavigator navigator) {
+        HttpClient.Builder.getWanAndroidServer().collectUrl(name, link)
+                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<HomeListBean>() {
+                    @Override
+                    public void onCompleted() {
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        navigator.onFailure();
+                    }
+
+                    @Override
+                    public void onNext(HomeListBean bean) {
+                        if (bean != null && bean.getErrorCode() == 0) {
+                            navigator.onSuccess();
+                        } else {
+                            navigator.onFailure();
+                        }
+                    }
+                });
+    }
+
+    /**
+     * 取消收藏url
+     */
+    public void unCollectUrl(int id, WanNavigator.OnCollectNavigator navigator) {
+        HttpClient.Builder.getWanAndroidServer().unCollectUrl(id)
+                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<HomeListBean>() {
+                    @Override
+                    public void onCompleted() {
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        navigator.onFailure();
+                    }
+
+                    @Override
+                    public void onNext(HomeListBean bean) {
+                        if (bean != null && bean.getErrorCode() == 0) {
+                            navigator.onSuccess();
+                        } else {
+                            navigator.onFailure();
+                        }
+                    }
+                });
+    }
+
+    /**
+     * 编辑收藏网站
+     */
+    public void updateUrl(int id, String name, String link, WanNavigator.OnCollectNavigator navigator) {
+        HttpClient.Builder.getWanAndroidServer().updateUrl(id,name,link)
+                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<HomeListBean>() {
+                    @Override
+                    public void onCompleted() {
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        navigator.onFailure();
+                    }
+
+                    @Override
+                    public void onNext(HomeListBean bean) {
+                        if (bean != null && bean.getErrorCode() == 0) {
+                            navigator.onSuccess();
+                        } else {
+                            navigator.onFailure();
+                        }
+                    }
+                });
+    }
 }

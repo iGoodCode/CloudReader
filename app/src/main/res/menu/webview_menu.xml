@@ -9,6 +9,12 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/actionbar_webview_refresh"
+        android:orderInCategory="100"
+        android:title="@string/actionbar_webview_refresh"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/actionbar_cope"
         android:orderInCategory="100"
         android:title="@string/actionbar_webview_cope"
@@ -18,5 +24,11 @@
         android:id="@+id/actionbar_open"
         android:orderInCategory="100"
         android:title="@string/actionbar_webview_open"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/actionbar_collect"
+        android:orderInCategory="100"
+        android:title="@string/actionbar_webview_collect"
         app:showAsAction="never" />
 </menu>

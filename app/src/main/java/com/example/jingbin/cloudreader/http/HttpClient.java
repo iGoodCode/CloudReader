@@ -2,6 +2,7 @@ package com.example.jingbin.cloudreader.http;
 
 import com.example.http.HttpUtils;
 import com.example.http.utils.BuildFactory;
+import com.example.jingbin.cloudreader.bean.CollectUrlBean;
 import com.example.jingbin.cloudreader.bean.FrontpageBean;
 import com.example.jingbin.cloudreader.bean.GankIoDataBean;
 import com.example.jingbin.cloudreader.bean.GankIoDayBean;
@@ -12,8 +13,9 @@ import com.example.jingbin.cloudreader.bean.book.BookBean;
 import com.example.jingbin.cloudreader.bean.book.BookDetailBean;
 import com.example.jingbin.cloudreader.bean.wanandroid.HomeListBean;
 import com.example.jingbin.cloudreader.bean.wanandroid.LoginBean;
-import com.example.jingbin.cloudreader.bean.wanandroid.NhdzListBean;
+import com.example.jingbin.cloudreader.bean.wanandroid.NaviJsonBean;
 import com.example.jingbin.cloudreader.bean.wanandroid.QsbkListBean;
+import com.example.jingbin.cloudreader.bean.wanandroid.TreeBean;
 import com.example.jingbin.cloudreader.bean.wanandroid.WanAndroidBannerBean;
 
 import retrofit2.http.Field;
@@ -42,7 +44,6 @@ public interface HttpClient {
 
         public static HttpClient getGankIOServer() {
             return BuildFactory.getInstance().create(HttpClient.class, HttpUtils.API_GANKIO);
-//            return HttpUtils.getInstance().getGankIOServer(HttpClient.class);
         }
 
         public static HttpClient getFirServer() {
@@ -51,10 +52,6 @@ public interface HttpClient {
 
         public static HttpClient getWanAndroidServer() {
             return BuildFactory.getInstance().create(HttpClient.class, HttpUtils.API_WAN_ANDROID);
-        }
-
-        public static HttpClient getNHDZServer() {
-            return BuildFactory.getInstance().create(HttpClient.class, HttpUtils.API_NHDZ);
         }
 
         public static HttpClient getQSBKServer() {
@@ -142,14 +139,6 @@ public interface HttpClient {
     Observable<QsbkListBean> getQsbkList(@Query("page") int page);
 
     /**
-     * 内涵段子
-     *
-     * @param page 页码，从0开始
-     */
-    @GET("neihan/stream/mix/v1/?mpic=2&essence=1&content_type=-102&message_cursor=-1&bd_Stringitude=113.369569&bd_latitude=23.149678&bd_city=广州市&am_Stringitude=113.367846&am_latitude=23.149878&am_city=广州市&am_loc_time=1465213692154&count=30&min_time=1465213700&screen_width=720&iid=4512422578&device_id=17215021497&ac=wifi&channel=NHSQH5AN&aid=7&app_name=joke_essay&version_code=431&device_platform=android&ssmix=a&device_type=6s+Plus&os_api=19&os_version=4.4.2&uuid=864394108025091&openudid=80FA5B208E050000&manifest_version_code=431")
-    Observable<NhdzListBean> getNhdzList(@Query("page") int page);
-
-    /**
      * 玩安卓，文章列表、知识体系下的文章
      *
      * @param page 页码，从0开始
@@ -174,6 +163,12 @@ public interface HttpClient {
     @FormUrlEncoded
     @POST("user/register")
     Observable<LoginBean> register(@Field("username") String username, @Field("password") String password, @Field("repassword") String repassword);
+
+    /**
+     * 退出
+     */
+    @GET("user/logout/json")
+    Observable<LoginBean> logout();
 
 
     /**
@@ -213,14 +208,49 @@ public interface HttpClient {
     Observable<HomeListBean> unCollect(@Path("id") int id, @Field("originId") int originId);
 
     /**
-     * 根据tag获取music
-     * @param tag
-     * @return
+     * 体系数据
      */
+    @GET("tree/json")
+    Observable<TreeBean> getTree();
 
-//    @GET("v2/music/search")
-//    Observable<MusicRoot> searchMusicByTag(@Query("tag")String tag);
+    /**
+     * 收藏网址
+     *
+     * @param name 标题
+     * @param link 链接
+     */
+    @FormUrlEncoded
+    @POST("lg/collect/addtool/json")
+    Observable<HomeListBean> collectUrl(@Field("name") String name, @Field("link") String link);
 
-//    @GET("v2/music/{id}")
-//    Observable<Musics> getMusicDetail(@Path("id") String id);
+    /**
+     * 编辑收藏网站
+     *
+     * @param name 标题
+     * @param link 链接
+     */
+    @FormUrlEncoded
+    @POST("lg/collect/updatetool/json")
+    Observable<HomeListBean> updateUrl(@Field("id") int id, @Field("name") String name, @Field("link") String link);
+
+    /**
+     * 删除收藏网站
+     *
+     * @param id 收藏网址id
+     */
+    @FormUrlEncoded
+    @POST("lg/collect/deletetool/json")
+    Observable<HomeListBean> unCollectUrl(@Field("id") int id);
+
+    /**
+     * 收藏网站列表
+     */
+    @GET("lg/collect/usertools/json")
+    Observable<CollectUrlBean> getCollectUrlList();
+
+    /**
+     * 导航数据
+     */
+    @GET("navi/json")
+    Observable<NaviJsonBean> getNaviJson();
 }
