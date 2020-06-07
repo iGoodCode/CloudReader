@@ -100,14 +100,7 @@ public class MyWebChromeClient extends WebChromeClient {
     public void onReceivedTitle(WebView view, String title) {
         super.onReceivedTitle(view, title);
         // 设置title
-        mActivity.setTitle(title);
-        this.title = title;
-    }
-
-    private String title = "";
-
-    public String getTitle() {
-        return title + " ";
+        mIWebPageView.setTitle(title);
     }
 
     //扩展浏览器上传文件

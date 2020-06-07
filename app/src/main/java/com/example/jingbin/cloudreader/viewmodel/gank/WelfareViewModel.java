@@ -1,20 +1,25 @@
 package com.example.jingbin.cloudreader.viewmodel.gank;
 
-import android.arch.lifecycle.ViewModel;
+import android.app.Application;
+import android.arch.lifecycle.MutableLiveData;
+import android.support.annotation.NonNull;
 
 import com.example.http.HttpUtils;
+import com.example.jingbin.cloudreader.base.BaseViewModel;
 import com.example.jingbin.cloudreader.bean.GankIoDataBean;
 import com.example.jingbin.cloudreader.data.model.GankOtherModel;
 import com.example.jingbin.cloudreader.http.RequestImpl;
 
 import java.util.ArrayList;
 
-import rx.Observable;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+
 
 /**
  * @author jingbin
@@ -22,10 +27,9 @@ import rx.schedulers.Schedulers;
  * @Description 福利页面ViewModel
  */
 
-public class WelfareViewModel extends ViewModel {
+public class WelfareViewModel extends BaseViewModel {
 
     private final GankOtherModel mModel;
-    private WelfareNavigator navigator;
     private int mPage = 1;
 
     /**
@@ -40,51 +44,42 @@ public class WelfareViewModel extends ViewModel {
      * 传递给Activity数据集合
      */
     private ArrayList<ArrayList<String>> allList = new ArrayList<>();
+    private final MutableLiveData<ArrayList<ArrayList<String>>> allListData = new MutableLiveData<>();
 
-    public void setNavigator(WelfareNavigator navigator) {
-        this.navigator = navigator;
-    }
-
-    public WelfareViewModel() {
+    public WelfareViewModel(@NonNull Application application) {
+        super(application);
         mModel = new GankOtherModel();
     }
 
-    public void loadWelfareData() {
-        mModel.setData("福利", mPage, HttpUtils.per_page_more);
+    public MutableLiveData<ArrayList<ArrayList<String>>> getImageAndTitle() {
+        return allListData;
+    }
+
+    public MutableLiveData<GankIoDataBean> loadWelfareData() {
+        final MutableLiveData<GankIoDataBean> data = new MutableLiveData<>();
+        mModel.setData("Girl", "Girl",mPage, HttpUtils.per_page_more);
         mModel.getGankIoData(new RequestImpl() {
             @Override
             public void loadSuccess(Object object) {
-                navigator.showLoadSuccessView();
-
                 GankIoDataBean gankIoDataBean = (GankIoDataBean) object;
-                if (mPage == 1) {
-                    if (gankIoDataBean == null || gankIoDataBean.getResults() == null || gankIoDataBean.getResults().size() <= 0) {
-                        navigator.showLoadFailedView();
-                        return;
-                    }
-                } else {
-                    if (gankIoDataBean == null || gankIoDataBean.getResults() == null || gankIoDataBean.getResults().size() <= 0) {
-                        navigator.showListNoMoreLoading();
-                        return;
-                    }
-                }
                 handleImageList(gankIoDataBean);
-                navigator.showAdapterView(gankIoDataBean);
+                data.setValue(gankIoDataBean);
             }
 
             @Override
             public void loadFailed() {
-                navigator.showLoadFailedView();
                 if (mPage > 1) {
                     mPage--;
                 }
+                data.setValue(null);
             }
 
             @Override
-            public void addSubscription(Subscription subscription) {
-                navigator.addRxSubscription(subscription);
+            public void addSubscription(Disposable disposable) {
+                addDisposable(disposable);
             }
         });
+        return data;
     }
 
     /**
@@ -93,10 +88,10 @@ public class WelfareViewModel extends ViewModel {
      * @param gankIoDataBean 原数据
      */
     private void handleImageList(GankIoDataBean gankIoDataBean) {
-        Subscription subscribe = Observable.just(gankIoDataBean)
-                .map(new Func1<GankIoDataBean, ArrayList<ArrayList<String>>>() {
+        Observable
+                .create(new ObservableOnSubscribe<ArrayList<ArrayList<String>>>() {
                     @Override
-                    public ArrayList<ArrayList<String>> call(GankIoDataBean gankIoDataBean) {
+                    public void subscribe(ObservableEmitter<ArrayList<ArrayList<String>>> emitter) throws Exception {
                         imgList.clear();
                         imageTitleList.clear();
                         for (int i = 0; i < gankIoDataBean.getResults().size(); i++) {
@@ -106,18 +101,32 @@ public class WelfareViewModel extends ViewModel {
                         allList.clear();
                         allList.add(imgList);
                         allList.add(imageTitleList);
-                        return allList;
+                        emitter.onNext(allList);
                     }
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<ArrayList<ArrayList<String>>>() {
+                .subscribe(new Observer<ArrayList<ArrayList<String>>>() {
                     @Override
-                    public void call(ArrayList<ArrayList<String>> arrayLists) {
-                        navigator.setImageList(arrayLists);
+                    public void onSubscribe(Disposable d) {
+                        addDisposable(d);
+                    }
+
+                    @Override
+                    public void onNext(ArrayList<ArrayList<String>> arrayLists) {
+                        allListData.setValue(arrayLists);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        allListData.setValue(null);
+                    }
+
+                    @Override
+                    public void onComplete() {
+
                     }
                 });
-        navigator.addRxSubscription(subscribe);
     }
 
     public int getPage() {
@@ -130,11 +139,10 @@ public class WelfareViewModel extends ViewModel {
 
     public void onDestroy() {
         imgList.clear();
-        imageTitleList.clear();
-        allList.clear();
         imgList = null;
+        imageTitleList.clear();
         imageTitleList = null;
+        allList.clear();
         allList = null;
-        navigator = null;
     }
 }

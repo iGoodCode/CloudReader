@@ -7,19 +7,21 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.bumptech.glide.Glide;
+import com.example.jingbin.cloudreader.BuildConfig;
 import com.example.jingbin.cloudreader.R;
+import com.example.jingbin.cloudreader.app.Constants;
 import com.example.jingbin.cloudreader.base.BaseActivity;
 import com.example.jingbin.cloudreader.databinding.ActivityNavAboutBinding;
-import com.example.jingbin.cloudreader.utils.BaseTools;
 import com.example.jingbin.cloudreader.utils.CommonUtils;
 import com.example.jingbin.cloudreader.utils.PerfectClickListener;
 import com.example.jingbin.cloudreader.utils.UpdateUtil;
 import com.example.jingbin.cloudreader.view.webview.WebViewActivity;
+import com.example.jingbin.cloudreader.viewmodel.menu.NoViewModel;
 
 /**
  * @author jingbin
  */
-public class NavAboutActivity extends BaseActivity<ActivityNavAboutBinding> {
+public class NavAboutActivity extends BaseActivity<NoViewModel, ActivityNavAboutBinding> {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +29,7 @@ public class NavAboutActivity extends BaseActivity<ActivityNavAboutBinding> {
         setContentView(R.layout.activity_nav_about);
         showContentView();
         setTitle("关于云阅");
-        bindingView.tvVersionName.setText("当前版本 V" + BaseTools.getVersionName());
+        bindingView.tvVersionName.setText("当前版本 V" + BuildConfig.VERSION_NAME);
 
 
         // 直接写在布局文件里会很耗内存
@@ -62,8 +64,8 @@ public class NavAboutActivity extends BaseActivity<ActivityNavAboutBinding> {
                     title = "干货集中营";
                     break;
                 case R.id.tv_douban:
-                    url = CommonUtils.getString(R.string.string_url_douban);
-                    title = "豆瓣开发者服务使用条款";
+                    url = CommonUtils.getString(R.string.string_url_mtime);
+                    title = "时光网";
                     break;
                 case R.id.tv_about_star:
                     url = CommonUtils.getString(R.string.string_url_cloudreader);
@@ -74,8 +76,8 @@ public class NavAboutActivity extends BaseActivity<ActivityNavAboutBinding> {
                     title = "更新日志";
                     break;
                 case R.id.tv_download_url:
-                    url = CommonUtils.getString(R.string.string_url_new_version);
-                    title = "云阅 - fir.im";
+                    url = Constants.DOWNLOAD_URL;
+                    title = "云阅";
                     break;
                 case R.id.tv_wanandroid:
                     url = CommonUtils.getString(R.string.string_url_wanandroid);

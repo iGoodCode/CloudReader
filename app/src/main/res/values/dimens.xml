@@ -28,5 +28,13 @@
     <!--书籍详情图片的宽高-->
     <dimen name="book_detail_width">120dp</dimen>
     <dimen name="book_detail_height">165dp</dimen>
+    <dimen name="size_16dp">16dp</dimen>
+    <dimen name="size_8dp">8dp</dimen>
+    <dimen name="size_7dp">7dp</dimen>
+    <dimen name="size_5dp">5dp</dimen>
+    <dimen name="size_30dp">30dp</dimen>
+    <dimen name="sp_30">30sp</dimen>
+    <dimen name="dp_10">10dp</dimen>
+    <dimen name="dp_4">4dp</dimen>
 
 </resources>

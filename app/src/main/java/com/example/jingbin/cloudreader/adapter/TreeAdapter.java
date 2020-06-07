@@ -1,75 +1,109 @@
 package com.example.jingbin.cloudreader.adapter;
 
 import android.support.annotation.NonNull;
-import android.text.Html;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.jingbin.cloudreader.R;
-import com.example.jingbin.cloudreader.base.baseadapter.BaseRecyclerViewAdapter;
-import com.example.jingbin.cloudreader.base.baseadapter.BaseRecyclerViewHolder;
-import com.example.jingbin.cloudreader.bean.wanandroid.TreeBean;
-import com.example.jingbin.cloudreader.databinding.ItemTreeBinding;
-import com.example.jingbin.cloudreader.ui.wan.child.ArticleListActivity;
-import com.zhy.view.flowlayout.FlowLayout;
-import com.zhy.view.flowlayout.TagAdapter;
-import com.zhy.view.flowlayout.TagFlowLayout;
+import com.example.jingbin.cloudreader.app.Constants;
+import com.example.jingbin.cloudreader.bean.wanandroid.TreeItemBean;
+import com.example.jingbin.cloudreader.bean.wanandroid.WxarticleItemBean;
+import com.example.jingbin.cloudreader.ui.wan.child.CategoryDetailActivity;
+import com.example.jingbin.cloudreader.utils.CommonUtils;
+import com.example.jingbin.cloudreader.utils.DataUtil;
+import com.example.jingbin.cloudreader.utils.SPUtils;
+import com.example.jingbin.cloudreader.view.ThinBoldSpan;
+import com.google.android.flexbox.FlexboxLayout;
 
-import java.util.List;
+import java.util.LinkedList;
+import java.util.Queue;
+
+import me.jingbin.library.adapter.BaseByViewHolder;
+import me.jingbin.library.adapter.BaseRecyclerAdapter;
 
 /**
- * Created by jingbin on 2018/09/15.
+ * Update by jingbin on 2020/1/03.
  */
 
-public class TreeAdapter extends BaseRecyclerViewAdapter<TreeBean.DataBean> {
+public class TreeAdapter extends BaseRecyclerAdapter<TreeItemBean> {
 
-    public int mProjectPosition = 26;
+    private LayoutInflater mInflater = null;
+    private Queue<TextView> mFlexItemTextViewCaches = new LinkedList<>();
+    private boolean isSelect = false;
+    private int selectedPosition = -1;
 
-    @NonNull
-    @Override
-    public BaseRecyclerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(parent, R.layout.item_tree);
+    public TreeAdapter() {
+        super(R.layout.item_tree);
     }
 
-    private class ViewHolder extends BaseRecyclerViewHolder<TreeBean.DataBean, ItemTreeBinding> {
-
-        ViewHolder(ViewGroup context, int layoutId) {
-            super(context, layoutId);
-        }
-
-        @Override
-        public void onBindViewHolder(final TreeBean.DataBean dataBean, final int position) {
-            if (dataBean != null) {
-                String name = dataBean.getName();
-                if ("开源项目主Tab".equals(name)) {
-                    mProjectPosition = position;
+    @Override
+    protected void bindView(BaseByViewHolder<TreeItemBean> holder, TreeItemBean dataBean, int position) {
+        if (dataBean != null) {
+            TextView tvTreeTitle = holder.getView(R.id.tv_tree_title);
+            FlexboxLayout flTree = holder.getView(R.id.fl_tree);
+            String name = DataUtil.getHtmlString(dataBean.getName());
+            if (isSelect) {
+                flTree.setVisibility(View.GONE);
+                if (selectedPosition == position) {
+                    name = name + "     ★★★";
+                    tvTreeTitle.setTextColor(CommonUtils.getColor(R.color.colorTheme));
+                } else {
+                    tvTreeTitle.setTextColor(CommonUtils.getColor(R.color.colorContent));
                 }
-                binding.setBean(dataBean);
-                List<TreeBean.DataBean.ChildrenBean> children = dataBean.getChildren();
-                if (children != null && children.size() > 0) {
-                    showTreeView(binding.tflTree, children);
+            } else {
+                tvTreeTitle.setTextColor(CommonUtils.getColor(R.color.colorContent));
+                flTree.setVisibility(View.VISIBLE);
+                for (int i = 0; i < dataBean.getChildren().size(); i++) {
+                    WxarticleItemBean childItem = dataBean.getChildren().get(i);
+                    TextView child = createOrGetCacheFlexItemTextView(flTree);
+                    child.setText(DataUtil.getHtmlString(childItem.getName()));
+                    child.setOnClickListener(v -> CategoryDetailActivity.start(v.getContext(), childItem.getId(), dataBean));
+                    flTree.addView(child);
                 }
             }
+            tvTreeTitle.setText(ThinBoldSpan.getDefaultSpanString(tvTreeTitle.getContext(), name));
         }
     }
 
     /**
-     * 显示标签
+     * 复用需要有相同的BaseByViewHolder，且HeaderView部分获取不到FlexboxLayout，需要容错
      */
-    private void showTreeView(TagFlowLayout flowlayoutHot, final List<TreeBean.DataBean.ChildrenBean> children) {
-        flowlayoutHot.setAdapter(new TagAdapter<TreeBean.DataBean.ChildrenBean>(children) {
-            @Override
-            public View getView(FlowLayout parent, int position, TreeBean.DataBean.ChildrenBean o) {
-                TextView textView = (TextView) View.inflate(parent.getContext(), R.layout.layout_tree_tag, null);
-                textView.setText(Html.fromHtml(o.getName()));
-                return textView;
+    @Override
+    public void onViewRecycled(@NonNull BaseByViewHolder<TreeItemBean> holder) {
+        super.onViewRecycled(holder);
+        FlexboxLayout fbl = holder.getView(R.id.fl_tree);
+        if (fbl != null) {
+            for (int i = 0; i < fbl.getChildCount(); i++) {
+                mFlexItemTextViewCaches.offer((TextView) fbl.getChildAt(i));
             }
-        });
-        flowlayoutHot.setOnTagClickListener((view, position, parent) -> {
-            TreeBean.DataBean.ChildrenBean childrenBean = children.get(position);
-            ArticleListActivity.start(view.getContext(), childrenBean.getId(), childrenBean.getName());
-            return true;
-        });
+            fbl.removeAllViews();
+        }
+    }
+
+    private TextView createOrGetCacheFlexItemTextView(FlexboxLayout fbl) {
+        TextView tv = mFlexItemTextViewCaches.poll();
+        if (tv != null) {
+            return tv;
+        }
+        if (mInflater == null) {
+            mInflater = LayoutInflater.from(fbl.getContext());
+        }
+        return (TextView) mInflater.inflate(R.layout.layout_tree_tag, fbl, false);
+    }
+
+    public void setSelect(boolean isSelect) {
+        this.isSelect = isSelect;
+        if (isSelect) {
+            selectedPosition = SPUtils.getInt(Constants.FIND_POSITION, -1);
+        }
+    }
+
+    public boolean isSelect() {
+        return isSelect;
+    }
+
+    public int getSelectedPosition() {
+        return selectedPosition;
     }
 }

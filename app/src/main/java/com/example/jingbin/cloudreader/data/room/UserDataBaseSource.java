@@ -2,7 +2,6 @@ package com.example.jingbin.cloudreader.data.room;
 
 import android.support.annotation.NonNull;
 
-import com.example.jingbin.cloudreader.utils.AppExecutors;
 import com.example.jingbin.cloudreader.utils.DebugUtil;
 
 import java.util.List;
@@ -78,7 +77,7 @@ public class UserDataBaseSource {
             public void run() {
                 try {
                     int success = mUserDao.deleteAll();
-                    DebugUtil.error("----success:" + success);
+//                    DebugUtil.error("----success:" + success);
                     mUserDao.addUser(user);
                 } catch (Exception e) {
                     DebugUtil.error(e.getMessage());

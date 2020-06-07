@@ -4,17 +4,16 @@
     <android.support.v4.widget.SwipeRefreshLayout xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/srl_wan"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context="com.example.jingbin.cloudreader.ui.wan.child.BookCustomFragment">
+        android:layout_height="match_parent">
 
-        <com.example.xrecyclerview.XRecyclerView
+        <me.jingbin.library.ByRecyclerView
             android:id="@+id/xrv_wan"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scrollbarAlwaysDrawVerticalTrack="true"
-            android:scrollbarFadeDuration="1"
-            android:scrollbarSize="4dp"
-            android:scrollbars="vertical" />
+            android:scrollbars="vertical"
+            tools:itemCount="5"
+            tools:layoutManager="LinearLayoutManager"
+            tools:listitem="@layout/item_wan_android" />
 
     </android.support.v4.widget.SwipeRefreshLayout>
 

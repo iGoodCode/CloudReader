@@ -1,16 +1,15 @@
 package com.example.jingbin.cloudreader.adapter;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import com.example.jingbin.cloudreader.R;
-import com.example.jingbin.cloudreader.base.baseadapter.BaseRecyclerViewAdapter;
-import com.example.jingbin.cloudreader.base.baseadapter.BaseRecyclerViewHolder;
+import com.example.jingbin.cloudreader.base.binding.BaseBindingAdapter;
+import com.example.jingbin.cloudreader.base.binding.BaseBindingHolder;
 import com.example.jingbin.cloudreader.bean.moviechild.SubjectsBean;
 import com.example.jingbin.cloudreader.databinding.ItemDoubanTopBinding;
-import com.example.jingbin.cloudreader.ui.movie.OneMovieDetailActivity;
 import com.example.jingbin.cloudreader.utils.DensityUtil;
 import com.example.jingbin.cloudreader.utils.DialogBuild;
 import com.example.jingbin.cloudreader.utils.PerfectClickListener;
@@ -19,42 +18,52 @@ import com.example.jingbin.cloudreader.utils.PerfectClickListener;
  * Created by jingbin on 2016/12/10.
  */
 
-public class DouBanTopAdapter extends BaseRecyclerViewAdapter<SubjectsBean> {
+public class DouBanTopAdapter extends BaseBindingAdapter<SubjectsBean, ItemDoubanTopBinding> {
 
-    private Activity activity;
     private int width;
 
-    public DouBanTopAdapter(Activity activity) {
-        this.activity = activity;
-        int px = DensityUtil.dip2px(36);
+    public DouBanTopAdapter(Context context) {
+        super(R.layout.item_douban_top);
+        int px = DensityUtil.dip2px(context, 36);
         width = (DensityUtil.getDisplayWidth() - px) / 3;
     }
 
     @Override
-    public BaseRecyclerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ViewHolder(parent, R.layout.item_douban_top);
+    protected void bindView(BaseBindingHolder holder, SubjectsBean bean, ItemDoubanTopBinding binding, int position) {
+        binding.setBean(bean);
+        DensityUtil.setWidthHeight(binding.ivTopPhoto, width, 0.758f);
+        binding.cvTopMovie.setOnClickListener(new PerfectClickListener() {
+            @Override
+            protected void onNoDoubleClick(View v) {
+                if (listener != null) {
+                    listener.onClick(bean, binding.ivTopPhoto);
+                }
+            }
+        });
+        binding.cvTopMovie.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                String title = "Top" + (position + 1) + ": " + bean.getTitle();
+                DialogBuild.showCustom(v, title, "查看详情", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (listener != null) {
+                            listener.onClick(bean, binding.ivTopPhoto);
+                        }
+                    }
+                });
+                return false;
+            }
+        });
     }
 
-    class ViewHolder extends BaseRecyclerViewHolder<SubjectsBean, ItemDoubanTopBinding> {
+    private OnClickListener listener;
 
-        ViewHolder(ViewGroup parent, int layout) {
-            super(parent, layout);
-        }
+    public interface OnClickListener {
+        void onClick(SubjectsBean bean, ImageView imageView);
+    }
 
-        @Override
-        public void onBindViewHolder(final SubjectsBean bean, final int position) {
-            binding.setBean(bean);
-            /**
-             * 当数据改变时，binding会在下一帧去改变数据，如果我们需要立即改变，就去调用executePendingBindings方法。
-             */
-            DensityUtil.formatHeight(binding.ivTopPhoto, width, 0.758f, 1);
-            binding.executePendingBindings();
-            binding.cvTopMovie.setOnClickListener(new PerfectClickListener() {
-                @Override
-                protected void onNoDoubleClick(View v) {
-                    OneMovieDetailActivity.start(activity, bean, binding.ivTopPhoto);
-                }
-            });
-        }
+    public void setListener(OnClickListener listener) {
+        this.listener = listener;
     }
 }

@@ -1,25 +1,32 @@
 package com.example.jingbin.cloudreader.view.webview;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.http.utils.CheckNetwork;
@@ -27,9 +34,13 @@ import com.example.jingbin.cloudreader.R;
 import com.example.jingbin.cloudreader.app.Constants;
 import com.example.jingbin.cloudreader.data.UserUtil;
 import com.example.jingbin.cloudreader.data.model.CollectModel;
+import com.example.jingbin.cloudreader.ui.MainActivity;
 import com.example.jingbin.cloudreader.utils.BaseTools;
 import com.example.jingbin.cloudreader.utils.CommonUtils;
+import com.example.jingbin.cloudreader.utils.DebugUtil;
 import com.example.jingbin.cloudreader.utils.DialogBuild;
+import com.example.jingbin.cloudreader.utils.PermissionHandler;
+import com.example.jingbin.cloudreader.utils.RxSaveImage;
 import com.example.jingbin.cloudreader.utils.SPUtils;
 import com.example.jingbin.cloudreader.utils.ShareUtils;
 import com.example.jingbin.cloudreader.utils.ToastUtil;
@@ -41,17 +52,20 @@ import com.example.jingbin.cloudreader.view.webview.config.MyWebChromeClient;
 import com.example.jingbin.cloudreader.view.webview.config.MyWebViewClient;
 import com.example.jingbin.cloudreader.viewmodel.wan.WanNavigator;
 
+import me.jingbin.progress.WebProgress;
+
+
 /**
  * 网页可以处理:
  * 点击相应控件:拨打电话、发送短信、发送邮件、上传图片、播放视频
  * 进度条、返回网页上一层、显示网页标题
- * Thanks to: https://github.com/youlookwhat/WebViewStudy
- * contact me: http://www.jianshu.com/users/e43c6e979831/latest_articles
+ * Thanks to: <a href="https://github.com/youlookwhat/WebViewStudy"/>
+ * contact me: http://www.jianshu.com/u/e43c6e979831
  */
 public class WebViewActivity extends AppCompatActivity implements IWebPageView {
 
     // 进度条
-    private ProgressBar mProgressBar;
+    private WebProgress mProgressBar;
     private WebView webView;
     // 全屏时视频加载view
     private FrameLayout videoFullView;
@@ -64,6 +78,7 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
     private String mUrl;
     // 可滚动的title 使用简单 没有渐变效果，文字两旁有阴影
     private TextView tvGunTitle;
+    private boolean isTitleFix;
     private CollectModel collectModel;
 
     @Override
@@ -73,23 +88,27 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
         getIntentData();
         initTitle();
         initWebView();
+        syncCookie(mUrl);
         webView.loadUrl(mUrl);
+        getDataFromBrowser(getIntent());
     }
 
     private void getIntentData() {
         if (getIntent() != null) {
             mTitle = getIntent().getStringExtra("mTitle");
             mUrl = getIntent().getStringExtra("mUrl");
+            isTitleFix = getIntent().getBooleanExtra("isTitleFix", false);
         }
     }
 
     private void initTitle() {
         StatusBarUtil.setColor(this, CommonUtils.getColor(R.color.colorTheme), 0);
-        mProgressBar = findViewById(R.id.pb_progress);
         webView = findViewById(R.id.webview_detail);
-        videoFullView = findViewById(R.id.video_fullView);
         mTitleToolBar = findViewById(R.id.title_tool_bar);
         tvGunTitle = findViewById(R.id.tv_gun_title);
+        mProgressBar = findViewById(R.id.pb_progress);
+        mProgressBar.setColor(CommonUtils.getColor(R.color.colorRateRed));
+        mProgressBar.show();
 
         initToolBar();
     }
@@ -103,7 +122,7 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
         }
         mTitleToolBar.setOverflowIcon(ContextCompat.getDrawable(this, R.drawable.actionbar_more));
         tvGunTitle.postDelayed(() -> tvGunTitle.setSelected(true), 1900);
-        setTitle(mTitle);
+        tvGunTitle.setText(mTitle);
     }
 
     @Override
@@ -112,8 +131,20 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
         return true;
     }
 
+    @Override
     public void setTitle(String mTitle) {
-        tvGunTitle.setText(mTitle);
+        if (!isTitleFix) {
+            tvGunTitle.setText(mTitle);
+            this.mTitle = mTitle;
+        }
+    }
+
+    /**
+     * 唤起其他app处理
+     */
+    @Override
+    public boolean handleOverrideUrl(String url) {
+        return WebUtil.handleThirdApp(this, mUrl, url);
     }
 
     @Override
@@ -121,21 +152,17 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
         switch (item.getItemId()) {
             case android.R.id.home:
                 // 返回键
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    finishAfterTransition();
-                } else {
-                    finish();
-                }
+                handleFinish();
                 break;
             case R.id.actionbar_share:
                 // 分享到
-                String shareText = mWebChromeClient.getTitle() + webView.getUrl() + " (分享自云阅)";
+                String shareText = mTitle + " " + webView.getUrl() + " (分享自云阅 " + Constants.DOWNLOAD_URL + ")";
                 ShareUtils.share(WebViewActivity.this, shareText);
                 break;
             case R.id.actionbar_cope:
                 // 复制链接
                 BaseTools.copy(webView.getUrl());
-                ToastUtil.showToast("复制成功");
+                ToastUtil.showToast("已复制到剪贴板");
                 break;
             case R.id.actionbar_open:
                 // 打开链接
@@ -143,9 +170,7 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
                 break;
             case R.id.actionbar_webview_refresh:
                 // 刷新页面
-                if (webView != null) {
-                    webView.reload();
-                }
+                webView.reload();
                 break;
             case R.id.actionbar_collect:
                 // 添加到收藏
@@ -171,10 +196,10 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
         if (collectModel == null) {
             collectModel = new CollectModel();
         }
-        collectModel.collectUrl(webView.getTitle(), webView.getUrl(), new WanNavigator.OnCollectNavigator() {
+        collectModel.collectUrl(mTitle, webView.getUrl(), new WanNavigator.OnCollectNavigator() {
             @Override
             public void onSuccess() {
-                ToastUtil.showToastLong("收藏网址成功");
+                ToastUtil.showToastLong("已添加到收藏");
             }
 
             @Override
@@ -186,10 +211,10 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
 
     @SuppressLint("SetJavaScriptEnabled")
     private void initWebView() {
-        mProgressBar.setVisibility(View.VISIBLE);
         WebSettings ws = webView.getSettings();
-        // 网页内容的宽度是否可大于WebView控件的宽度
-        ws.setLoadWithOverviewMode(false);
+        // 网页内容的宽度适配
+        ws.setLoadWithOverviewMode(true);
+        ws.setUseWideViewPort(true);
         // 保存表单数据
         ws.setSaveFormData(true);
         // 是否应该支持使用其屏幕缩放控件和手势缩放
@@ -200,11 +225,6 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
         ws.setAppCacheEnabled(true);
         // 设置缓存模式
         ws.setCacheMode(WebSettings.LOAD_DEFAULT);
-        // setDefaultZoom  api19被弃用
-        // 设置此属性，可任意比例缩放。
-        ws.setUseWideViewPort(true);
-        // 不缩放
-        webView.setInitialScale(100);
         // 告诉WebView启用JavaScript执行。默认的是false。
         ws.setJavaScriptEnabled(true);
         //  页面加载好以后，再放开图片
@@ -228,11 +248,17 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
         // 与js交互
         webView.addJavascriptInterface(new ImageClickInterface(this), "injectedObject");
         webView.setWebViewClient(new MyWebViewClient(this));
+        webView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                return handleLongImage();
+            }
+        });
     }
 
     @Override
     public void hindProgressBar() {
-        mProgressBar.setVisibility(View.GONE);
+        mProgressBar.hide();
     }
 
     @Override
@@ -265,26 +291,27 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
 
     @Override
     public void startProgress(int newProgress) {
-        mProgressBar.setVisibility(View.VISIBLE);
-        mProgressBar.setProgress(newProgress);
-        if (newProgress == 100) {
-            mProgressBar.setVisibility(View.GONE);
-        }
+        mProgressBar.setWebProgress(newProgress);
     }
 
     @Override
     public void addImageClickListener() {
+//        loadImageClickJS();
+//        loadTextClickJS();
+    }
+
+    private void loadImageClickJS() {
         // 这段js函数的功能就是，遍历所有的img节点，并添加onclick函数，函数的功能是在图片点击的时候调用本地java接口并传递url过去
-        // 如要点击一张图片在弹出的页面查看所有的图片集合,则获取的值应该是个图片数组
         webView.loadUrl("javascript:(function(){" +
                 "var objs = document.getElementsByTagName(\"img\");" +
                 "for(var i=0;i<objs.length;i++)" +
                 "{" +
-                //  "objs[i].onclick=function(){alert(this.getAttribute(\"has_link\"));}" +
                 "objs[i].onclick=function(){window.injectedObject.imageClick(this.getAttribute(\"src\"),this.getAttribute(\"has_link\"));}" +
                 "}" +
                 "})()");
+    }
 
+    private void loadTextClickJS() {
         // 遍历所有的a节点,将节点里的属性传递过去(属性自定义,用于页面跳转)
         webView.loadUrl("javascript:(function(){" +
                 "var objs =document.getElementsByTagName(\"a\");" +
@@ -296,6 +323,36 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
                 "})()");
     }
 
+    /**
+     * 同步cookie
+     */
+    private void syncCookie(String url) {
+        if (!TextUtils.isEmpty(url) && url.contains("wanandroid")) {
+            try {
+                CookieSyncManager.createInstance(this);
+                CookieManager cookieManager = CookieManager.getInstance();
+                cookieManager.setAcceptCookie(true);
+                cookieManager.removeSessionCookie();// 移除
+                cookieManager.removeAllCookie();
+                String cookie = SPUtils.getString("cookie", "");
+                if (!TextUtils.isEmpty(cookie)) {
+                    String[] split = cookie.split(";");
+                    for (int i = 0; i < split.length; i++) {
+                        cookieManager.setCookie(url, split[i]);
+                    }
+                }
+//            String cookies = cookieManager.getCookie(url);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    cookieManager.flush();
+                } else {
+                    CookieSyncManager.getInstance().sync();
+                }
+            } catch (Exception e) {
+                DebugUtil.error("==异常==", e.toString());
+            }
+        }
+    }
+
     public FrameLayout getVideoFullView() {
         return videoFullView;
     }
@@ -305,7 +362,7 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
      */
     public void hideCustomView() {
         mWebChromeClient.onHideCustomView();
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
     /**
@@ -318,6 +375,78 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
         } else if (requestCode == MyWebChromeClient.FILECHOOSER_RESULTCODE_FOR_ANDROID_5) {
             mWebChromeClient.mUploadMessageForAndroid5(intent, resultCode);
         }
+    }
+
+    /**
+     * 使用singleTask启动模式的Activity在系统中只会存在一个实例。
+     * 如果这个实例已经存在，intent就会通过onNewIntent传递到这个Activity。
+     * 否则新的Activity实例被创建。
+     */
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        getDataFromBrowser(intent);
+    }
+
+    /**
+     * 作为三方浏览器打开
+     * Scheme: https
+     * host: www.jianshu.com
+     * path: /p/1cbaf784c29c
+     * url = scheme + "://" + host + path;
+     */
+    private void getDataFromBrowser(Intent intent) {
+        Uri data = intent.getData();
+        if (data != null) {
+            try {
+                String scheme = data.getScheme();
+                String host = data.getHost();
+                String path = data.getPath();
+//                String text = "Scheme: " + scheme + "\n" + "host: " + host + "\n" + "path: " + path;
+//                Log.e("data", text);
+                String url = scheme + "://" + host + path;
+                webView.loadUrl(url);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 长按图片事件处理
+     */
+    private boolean handleLongImage() {
+        final WebView.HitTestResult hitTestResult = webView.getHitTestResult();
+        // 如果是图片类型或者是带有图片链接的类型
+        if (hitTestResult.getType() == WebView.HitTestResult.IMAGE_TYPE ||
+                hitTestResult.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
+            // 弹出保存图片的对话框
+            new AlertDialog.Builder(WebViewActivity.this)
+                    .setItems(new String[]{"发送给朋友", "保存到相册"}, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            String picUrl = hitTestResult.getExtra();
+                            //获取图片
+//                            Log.e("picUrl", picUrl);
+                            switch (which) {
+                                case 0:
+                                    ShareUtils.shareNetImage(WebViewActivity.this, picUrl);
+                                    break;
+                                case 1:
+                                    if (!PermissionHandler.isHandlePermission(WebViewActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                                        return;
+                                    }
+                                    RxSaveImage.saveImageToGallery(WebViewActivity.this, picUrl, picUrl);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    })
+                    .show();
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -335,14 +464,20 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
 
                 //退出网页
             } else {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    finishAfterTransition();
-                } else {
-                    finish();
-                }
+                handleFinish();
             }
         }
         return false;
+    }
+
+    /**
+     * 直接通过三方浏览器打开时，回退到首页
+     */
+    public void handleFinish() {
+        supportFinishAfterTransition();
+        if (!MainActivity.isLaunch) {
+            MainActivity.start(this);
+        }
     }
 
     @Override
@@ -359,7 +494,7 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
         webView.resumeTimers();
         // 设置为横屏
         if (getRequestedOrientation() != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         }
     }
 
@@ -382,7 +517,7 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
             webView.setWebViewClient(null);
             webView.destroy();
             webView = null;
-            mProgressBar.clearAnimation();
+            mProgressBar.reset();
             tvGunTitle.clearAnimation();
             tvGunTitle.clearFocus();
         }
@@ -390,6 +525,26 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
             collectModel = null;
         }
         super.onDestroy();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (newConfig.fontScale != 1) {
+            getResources();
+        }
+    }
+
+    /**
+     * 禁止改变字体大小
+     */
+    @Override
+    public Resources getResources() {
+        Resources res = super.getResources();
+        Configuration config = new Configuration();
+        config.setToDefaults();
+        res.updateConfiguration(config, res.getDisplayMetrics());
+        return res;
     }
 
     /**
@@ -400,13 +555,27 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView {
      * @param mTitle   title
      */
     public static void loadUrl(Context mContext, String mUrl, String mTitle) {
+        loadUrl(mContext, mUrl, mTitle, false);
+    }
+
+    /**
+     * 打开网页:
+     *
+     * @param mContext     上下文
+     * @param mUrl         要加载的网页url
+     * @param mTitle       title
+     * @param isTitleFixed title是否固定
+     */
+    public static void loadUrl(Context mContext, String mUrl, String mTitle, boolean isTitleFixed) {
         if (CheckNetwork.isNetworkConnected(mContext)) {
             Intent intent = new Intent(mContext, WebViewActivity.class);
             intent.putExtra("mUrl", mUrl);
+            intent.putExtra("isTitleFix", isTitleFixed);
             intent.putExtra("mTitle", mTitle == null ? "" : mTitle);
             mContext.startActivity(intent);
         } else {
             ToastUtil.showToastLong("当前网络不可用，请检查你的网络设置");
         }
     }
+
 }

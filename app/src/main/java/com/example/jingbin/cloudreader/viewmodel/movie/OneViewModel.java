@@ -1,34 +1,39 @@
 package com.example.jingbin.cloudreader.viewmodel.movie;
 
+import android.app.Application;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
-import android.arch.lifecycle.ViewModel;
+import android.support.annotation.NonNull;
 
+import com.example.jingbin.cloudreader.base.BaseViewModel;
 import com.example.jingbin.cloudreader.bean.HotMovieBean;
 import com.example.jingbin.cloudreader.data.model.OneRepository;
+import com.example.jingbin.cloudreader.http.HttpClient;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * @author jingbin
- * @data 2017/12/15
- * @Description 依赖注入：依赖注入允许类在不构造它们的情况下定义它们的依赖关系。在运行时，另一个类负责提供这些依赖关系。
- * 我们推荐Google的Dagger 2库在Android应用程序中实现依赖注入。Dagger 2通过遍历依赖关系树来自动构造对象，并为依赖关系提供编译时间保证。
+ * @data 2018/12/22
  */
 
-public class OneViewModel extends ViewModel {
+public class OneViewModel extends BaseViewModel {
 
     private MutableLiveData<HotMovieBean> hotMovieBean;
     private OneRepository oneRepo;
+    private int mStart = 0;
+    private int mCount = 21;
+
+    public OneViewModel(@NonNull Application application) {
+        super(application);
+        this.oneRepo = new OneRepository();
+    }
 
     private void setHotMovieBean(MutableLiveData<HotMovieBean> hotMovieBean) {
         this.hotMovieBean = hotMovieBean;
-    }
-
-    /**
-     * UserRepository parameter is provided by Dagger 2
-     * public 必须，不然报错
-     */
-    public OneViewModel() {
-        this.oneRepo = new OneRepository();
     }
 
     public LiveData<HotMovieBean> getHotMovie() {
@@ -48,4 +53,37 @@ public class OneViewModel extends ViewModel {
         setHotMovieBean(hotMovie);
         return hotMovie;
     }
+
+    public MutableLiveData<HotMovieBean> getComingSoon() {
+        final MutableLiveData<HotMovieBean> data = new MutableLiveData<>();
+        Disposable subscribe = HttpClient.Builder.getDouBanService().getComingSoon(mStart, mCount)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<HotMovieBean>() {
+                    @Override
+                    public void accept(HotMovieBean hotMovieBean) throws Exception {
+                        data.setValue(hotMovieBean);
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        data.setValue(null);
+                    }
+                });
+        addDisposable(subscribe);
+        return data;
+    }
+
+    public int getStart() {
+        return mStart;
+    }
+
+    public void handleNextStart() {
+        mStart += mCount;
+    }
+
+    public void setStart(int start) {
+        this.mStart = start;
+    }
+
 }

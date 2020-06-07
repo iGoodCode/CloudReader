@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -25,23 +26,23 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.example.jingbin.cloudreader.R;
 import com.example.jingbin.cloudreader.databinding.BaseHeaderTitleBarBinding;
 import com.example.jingbin.cloudreader.utils.CommonUtils;
-import com.example.jingbin.cloudreader.utils.PerfectClickListener;
 import com.example.jingbin.cloudreader.view.CustomChangeBounds;
 import com.example.jingbin.cloudreader.view.MyNestedScrollView;
 import com.example.jingbin.cloudreader.view.statusbar.StatusBarUtil;
-import com.example.jingbin.cloudreader.view.test.StatusBarUtils;
+import com.example.jingbin.cloudreader.view.statue.StatusBarUtils;
 
 import java.lang.reflect.Method;
 
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import jp.wasabeef.glide.transformations.BlurTransformation;
-import rx.Subscription;
-import rx.subscriptions.CompositeSubscription;
 
 
 /**
@@ -59,7 +60,7 @@ public abstract class BaseHeaderActivity<HV extends ViewDataBinding, SV extends 
     // 内容布局view
     protected SV bindingContentView;
     private View loadingView;
-    private View refreshView;
+    private View errorView;
     // 滑动多少距离后标题不透明
     private int slidingDistance;
     // 这个是高斯图背景的高度
@@ -67,7 +68,7 @@ public abstract class BaseHeaderActivity<HV extends ViewDataBinding, SV extends 
     // 清除动画，防止内存泄漏
     private CustomChangeBounds changeBounds;
     private AnimationDrawable mAnimationDrawable;
-    private CompositeSubscription mCompositeSubscription;
+    private CompositeDisposable mCompositeDisposable;
 
     protected <T extends View> T getView(int id) {
         return (T) findViewById(id);
@@ -94,14 +95,12 @@ public abstract class BaseHeaderActivity<HV extends ViewDataBinding, SV extends 
         bindingTitleView.getRoot().setLayoutParams(titleParams);
         RelativeLayout mTitleContainer = (RelativeLayout) ll.findViewById(R.id.title_container);
         mTitleContainer.addView(bindingTitleView.getRoot());
-        getWindow().setContentView(ll);
 
         // header
         RelativeLayout.LayoutParams headerParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         bindingHeaderView.getRoot().setLayoutParams(headerParams);
         RelativeLayout mHeaderContainer = (RelativeLayout) ll.findViewById(R.id.header_container);
         mHeaderContainer.addView(bindingHeaderView.getRoot());
-        getWindow().setContentView(ll);
 
         // content
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -111,8 +110,6 @@ public abstract class BaseHeaderActivity<HV extends ViewDataBinding, SV extends 
         getWindow().setContentView(ll);
 
         loadingView = ((ViewStub) getView(R.id.vs_loading)).inflate();
-        refreshView = ((ViewStub) getView(R.id.vs_error_refresh)).inflate();
-        refreshView.setVisibility(View.GONE);
 
         // 设置自定义元素共享切换动画
 //        setMotion(setHeaderPicView(), false);
@@ -130,16 +127,7 @@ public abstract class BaseHeaderActivity<HV extends ViewDataBinding, SV extends 
         if (!mAnimationDrawable.isRunning()) {
             mAnimationDrawable.start();
         }
-        // 点击加载失败布局
-        refreshView.setOnClickListener(new PerfectClickListener() {
-            @Override
-            protected void onNoDoubleClick(View v) {
-                showLoading();
-                onRefresh();
-            }
-        });
         bindingContentView.getRoot().setVisibility(View.GONE);
-
     }
 
 
@@ -230,24 +218,14 @@ public abstract class BaseHeaderActivity<HV extends ViewDataBinding, SV extends 
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeAsUpIndicator(R.drawable.icon_back);
         }
-        // 手动设置才有效果
-//        bindingTitleView.tbBaseTitle.setTitleTextAppearance(this, R.style.ToolBar_Title);
-//        bindingTitleView.tbBaseTitle.setSubtitleTextAppearance(this, R.style.Toolbar_SubTitle);
         bindingTitleView.tbBaseTitle.setOverflowIcon(ContextCompat.getDrawable(this, R.drawable.actionbar_more));
         bindingTitleView.tbBaseTitle.setNavigationOnClickListener(v -> {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                finishAfterTransition();
-            } else {
-                finish();
-            }
+            supportFinishAfterTransition();
         });
         bindingTitleView.tbBaseTitle.setOnMenuItemClickListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.actionbar_more:// 更多信息
-                    setTitleClickMore();
-                    break;
-                default:
-                    break;
+            if (item.getItemId() == R.id.actionbar_more) {
+                // 更多信息
+                setTitleClickMore();
             }
             return false;
         });
@@ -327,20 +305,21 @@ public abstract class BaseHeaderActivity<HV extends ViewDataBinding, SV extends 
             // 高斯模糊背景 原来 参数：12,5  23,4
             Glide.with(this).load(imgUrl)
                     .error(R.drawable.stackblur_default)
-                    .bitmapTransform(new BlurTransformation(this, 23, 4)).listener(new RequestListener<String, GlideDrawable>() {
-                @Override
-                public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                    return false;
-                }
+                    .transform(new BlurTransformation(40, 8))
+                    .listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            return false;
+                        }
 
-                @Override
-                public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                    bindingTitleView.tbBaseTitle.setBackgroundColor(Color.TRANSPARENT);
-                    bindingTitleView.ivBaseTitlebarBg.setImageAlpha(0);
-                    bindingTitleView.ivBaseTitlebarBg.setVisibility(View.VISIBLE);
-                    return false;
-                }
-            }).into(bindingTitleView.ivBaseTitlebarBg);
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            bindingTitleView.tbBaseTitle.setBackgroundColor(Color.TRANSPARENT);
+                            bindingTitleView.ivBaseTitlebarBg.setImageAlpha(0);
+                            bindingTitleView.ivBaseTitlebarBg.setVisibility(View.VISIBLE);
+                            return false;
+                        }
+                    }).into(bindingTitleView.ivBaseTitlebarBg);
         }
     }
 
@@ -396,8 +375,8 @@ public abstract class BaseHeaderActivity<HV extends ViewDataBinding, SV extends 
         if (bindingContentView.getRoot().getVisibility() != View.GONE) {
             bindingContentView.getRoot().setVisibility(View.GONE);
         }
-        if (refreshView != null && refreshView.getVisibility() != View.GONE) {
-            refreshView.setVisibility(View.GONE);
+        if (errorView != null && errorView.getVisibility() != View.GONE) {
+            errorView.setVisibility(View.GONE);
         }
     }
 
@@ -409,8 +388,8 @@ public abstract class BaseHeaderActivity<HV extends ViewDataBinding, SV extends 
         if (mAnimationDrawable.isRunning()) {
             mAnimationDrawable.stop();
         }
-        if (refreshView != null && refreshView.getVisibility() != View.GONE) {
-            refreshView.setVisibility(View.GONE);
+        if (errorView != null && errorView.getVisibility() != View.GONE) {
+            errorView.setVisibility(View.GONE);
         }
         if (bindingContentView.getRoot().getVisibility() != View.VISIBLE) {
             bindingContentView.getRoot().setVisibility(View.VISIBLE);
@@ -425,8 +404,19 @@ public abstract class BaseHeaderActivity<HV extends ViewDataBinding, SV extends 
         if (mAnimationDrawable.isRunning()) {
             mAnimationDrawable.stop();
         }
-        if (refreshView != null && refreshView.getVisibility() != View.VISIBLE) {
-            refreshView.setVisibility(View.VISIBLE);
+        if (errorView == null) {
+            ViewStub viewStub = (ViewStub) findViewById(R.id.vs_error_refresh);
+            errorView = viewStub.inflate();
+            // 点击加载失败布局
+            errorView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    showLoading();
+                    onRefresh();
+                }
+            });
+        } else {
+            errorView.setVisibility(View.VISIBLE);
         }
         if (bindingContentView.getRoot().getVisibility() != View.GONE) {
             bindingContentView.getRoot().setVisibility(View.GONE);
@@ -440,17 +430,17 @@ public abstract class BaseHeaderActivity<HV extends ViewDataBinding, SV extends 
 
     }
 
-    public void addSubscription(Subscription s) {
-        if (this.mCompositeSubscription == null) {
-            this.mCompositeSubscription = new CompositeSubscription();
+    public void addSubscription(Disposable s) {
+        if (this.mCompositeDisposable == null) {
+            this.mCompositeDisposable = new CompositeDisposable();
         }
-        this.mCompositeSubscription.add(s);
+        this.mCompositeDisposable.add(s);
     }
 
     @Override
     public void onDestroy() {
-        if (this.mCompositeSubscription != null && mCompositeSubscription.hasSubscriptions()) {
-            this.mCompositeSubscription.unsubscribe();
+        if (this.mCompositeDisposable != null && !mCompositeDisposable.isDisposed()) {
+            this.mCompositeDisposable.clear();
         }
         if (changeBounds != null) {
             changeBounds.addListener(null);
@@ -467,9 +457,9 @@ public abstract class BaseHeaderActivity<HV extends ViewDataBinding, SV extends 
         super.onDestroy();
     }
 
-    public void removeSubscription() {
-        if (this.mCompositeSubscription != null && mCompositeSubscription.hasSubscriptions()) {
-            this.mCompositeSubscription.unsubscribe();
+    public void removeDisposable() {
+        if (this.mCompositeDisposable != null && !mCompositeDisposable.isDisposed()) {
+            this.mCompositeDisposable.dispose();
         }
     }
 }

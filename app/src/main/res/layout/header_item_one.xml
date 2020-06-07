@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
 
         <variable
             name="view"
-            type="com.example.jingbin.cloudreader.ui.movie.OneFragment" />
+            type="com.example.jingbin.cloudreader.ui.douban.OneFragment" />
 
         <import type="com.example.jingbin.cloudreader.app.ConstantsImageUrl" />
 
     </data>
 
-
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/color_page_bg"
         android:gravity="bottom"
         android:orientation="vertical">
 
@@ -28,13 +27,15 @@
             android:onClick="@{() -> view.headerClick()}"
             android:orientation="horizontal">
 
+            <!--android:displayRandom="@{ConstantsImageUrl.ONE_URL_01}"-->
+            <!--android:imgType="@{3}"-->
             <ImageView
                 android:id="@+id/iv_img"
                 android:layout_width="66dp"
                 android:layout_height="66dp"
-                android:displayRandom="@{ConstantsImageUrl.ONE_URL_01}"
-                android:imgType="@{3}"
-                android:scaleType="centerCrop" />
+                android:background="@color/color_page_bg"
+                android:scaleType="centerInside"
+                android:src="@drawable/icon_github" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -73,25 +74,44 @@
 
 
         <LinearLayout
-            android:layout_below="@+id/ll_movie_top"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@+id/ll_movie_top"
+            android:layout_marginTop="7dp"
+            android:layout_marginBottom="7dp"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingBottom="5dp"
-            android:paddingTop="7dp">
+            android:orientation="horizontal">
 
             <ImageView
                 android:layout_width="15dp"
                 android:layout_height="23dp"
                 android:background="@drawable/ic_cylinder" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="热映榜"
-                android:textColor="@color/colorContent"
-                android:textSize="17sp" />
+            <android.support.design.widget.TabLayout
+                android:id="@+id/tl_movie"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                app:tabGravity="center"
+                app:tabIndicatorColor="@color/colorContent"
+                app:tabMode="scrollable"
+                app:tabSelectedTextColor="@color/colorContent"
+                app:tabTextAppearance="@style/MyTabLayoutTextAppearance"
+                app:tabTextColor="@color/colorTabText">
+
+                <android.support.design.widget.TabItem
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="热映榜"
+                    android:textColor="@color/colorContent"
+                    android:textSize="16sp" />
+
+                <android.support.design.widget.TabItem
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="即将上映"
+                    android:textColor="@color/colorContent"
+                    android:textSize="16sp" />
+            </android.support.design.widget.TabLayout>
         </LinearLayout>
 
     </RelativeLayout>

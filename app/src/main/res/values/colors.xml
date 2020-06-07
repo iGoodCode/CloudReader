@@ -9,6 +9,7 @@
     <color name="color_page_bg">#F1F3F4</color>
 
     <color name="colorWhite">#ffffffff</color>
+    <color name="colorWhiteHalf">#bbffffff</color>
 
     <!--主页tab背景-->
     <color name="colorTabBg">#ffffffff</color>
@@ -19,7 +20,7 @@
     <!--侧边栏分割线-->
     <color name="colorNavLine">#E0E0E0</color>
     <!--导航数据侧边栏背景色-->
-    <color name="colorNaviBg">#80ffffff</color>
+    <color name="colorNaviBg">#f3f3f3</color>
 
 
     <!--分割线-->

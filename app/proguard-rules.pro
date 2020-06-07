@@ -16,6 +16,8 @@
 #   public *;
 #}
 
+-keep public class *extends java.lang.annotation.Annotation {}
+
 # bugly
 -dontwarn com.tencent.bugly.**
 -keep public class com.tencent.bugly.**{*;}
@@ -40,3 +42,27 @@
 -keep class com.youth.banner.** {
     *;
  }
+
+ # com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.41
+ -keep class com.chad.library.adapter.** {
+ *;
+ }
+ -keep public class * extends com.chad.library.adapter.base.BaseQuickAdapter
+ -keep public class * extends com.chad.library.adapter.base.BaseViewHolder
+ -keepclassmembers  class **$** extends com.chad.library.adapter.base.BaseViewHolder {
+      <init>(...);
+ }
+
+# glide
+-keep public class * implements com.bumptech.glide.module.GlideModule
+-keep public class * extends com.bumptech.glide.module.AppGlideModule
+-keep public enum com.bumptech.glide.load.ImageHeaderParser$** {
+  **[] $VALUES;
+  public *;
+}
+
+# for DexGuard only
+-keepresourcexmlelements manifest/application/meta-data@value=GlideModule
+
+# me.jingbin.sbanner.SBannerView
+-keep class me.jingbin.sbanner.** {*;}

@@ -1,33 +1,38 @@
 package com.example.jingbin.cloudreader.viewmodel.menu;
 
+import android.app.Application;
 import android.arch.lifecycle.MutableLiveData;
-import android.arch.lifecycle.ViewModel;
 import android.databinding.ObservableField;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.example.jingbin.cloudreader.bean.HotMovieBean;
+import com.example.jingbin.cloudreader.base.BaseViewModel;
 import com.example.jingbin.cloudreader.bean.wanandroid.LoginBean;
 import com.example.jingbin.cloudreader.data.UserUtil;
 import com.example.jingbin.cloudreader.data.room.Injection;
 import com.example.jingbin.cloudreader.http.HttpClient;
 import com.example.jingbin.cloudreader.utils.ToastUtil;
 
-import rx.Observer;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+
 
 /**
  * @author jingbin
  * @data 2018/5/7
  * @Description wanandroid登录的ViewModel
  */
-
-public class LoginViewModel extends ViewModel {
+public class LoginViewModel extends BaseViewModel {
 
     public final ObservableField<String> username = new ObservableField<>();
 
     public final ObservableField<String> password = new ObservableField<>();
+
+    public LoginViewModel(@NonNull Application application) {
+        super(application);
+    }
 
     public MutableLiveData<Boolean> register() {
         final MutableLiveData<Boolean> data = new MutableLiveData<>();
@@ -40,11 +45,8 @@ public class LoginViewModel extends ViewModel {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<LoginBean>() {
                     @Override
-                    public void onCompleted() {
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
+                    public void onSubscribe(Disposable d) {
+                        addDisposable(d);
                     }
 
                     @Override
@@ -61,6 +63,16 @@ public class LoginViewModel extends ViewModel {
                             data.setValue(false);
                         }
                     }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        data.setValue(false);
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
                 });
         return data;
     }
@@ -76,11 +88,8 @@ public class LoginViewModel extends ViewModel {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<LoginBean>() {
                     @Override
-                    public void onCompleted() {
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
+                    public void onSubscribe(Disposable d) {
+                        addDisposable(d);
                     }
 
                     @Override
@@ -95,6 +104,16 @@ public class LoginViewModel extends ViewModel {
                             }
                             data.setValue(false);
                         }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        data.setValue(false);
+                    }
+
+                    @Override
+                    public void onComplete() {
+
                     }
                 });
         return data;

@@ -9,26 +9,26 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
-import com.example.jingbin.cloudreader.app.CloudReaderApplication;
+import com.example.jingbin.cloudreader.app.App;
 
 /**
- * Created by Administrator on 2015/10/19.
+ * Created by jingbin on 2015/10/19.
  */
 public class DensityUtil {
 
     /**
      * 根据手机的分辨率从 dp 的单位 转成为 px(像素)
      */
-    public static int dip2px(float dpValue) {
-        final float scale = CloudReaderApplication.getInstance().getResources().getDisplayMetrics().density;
+    public static int dip2px(Context context, float dpValue) {
+        final float scale = context.getResources().getDisplayMetrics().density;
         return (int) (dpValue * scale + 0.5f);
     }
 
     /**
      * 根据手机的分辨率从 px(像素) 的单位 转成为 dp
      */
-    public static int px2dip(float pxValue) {
-        final float scale = CloudReaderApplication.getInstance().getResources().getDisplayMetrics().density;
+    public static int px2dip(Context context, float pxValue) {
+        final float scale = context.getResources().getDisplayMetrics().density;
         return (int) (pxValue / scale + 0.5f);
     }
 
@@ -64,10 +64,10 @@ public class DensityUtil {
 
         //根据DP与PX转换计算值
         if (isDp) {
-            leftPx = dip2px(left);
-            rightPx = dip2px(right);
-            topPx = dip2px(top);
-            bottomPx = dip2px(bottom);
+            leftPx = dip2px(view.getContext(), left);
+            rightPx = dip2px(view.getContext(), right);
+            topPx = dip2px(view.getContext(), top);
+            bottomPx = dip2px(view.getContext(), bottom);
         }
         //设置margin
         marginParams.setMargins(leftPx, topPx, rightPx, bottomPx);
@@ -86,7 +86,7 @@ public class DensityUtil {
      * @param marginBottom 下面的dp
      */
     public static void formatHeight(View imageView, float bili, int type, int marginLR, int marginTop, int marginBottom) {
-        WindowManager wm = (WindowManager) CloudReaderApplication.getInstance().getSystemService(Context.WINDOW_SERVICE);
+        WindowManager wm = (WindowManager) App.getInstance().getSystemService(Context.WINDOW_SERVICE);
         int width = wm.getDefaultDisplay().getWidth();
         int height = (int) (width / bili);
         if (type == 1) {
@@ -101,7 +101,10 @@ public class DensityUtil {
         }
 
         ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) imageView.getLayoutParams();
-        layoutParams.setMargins(dip2px(marginLR), dip2px(marginTop), dip2px(marginLR), dip2px(marginBottom));
+        layoutParams.setMargins(dip2px(imageView.getContext(), marginLR),
+                dip2px(imageView.getContext(), marginTop),
+                dip2px(imageView.getContext(), marginLR),
+                dip2px(imageView.getContext(), marginBottom));
     }
 
     /**
@@ -125,13 +128,25 @@ public class DensityUtil {
         }
     }
 
+    /**
+     * 通过比例设置图片的高度
+     *
+     * @param width 图片的宽
+     * @param bili  图片比例
+     */
+    public static void setWidthHeight(View view, int width, float bili) {
+        int height = (int) (width / bili);
+        ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
+        layoutParams.width = width;
+        layoutParams.height = height;
+    }
 
     /**
      * 得到屏幕的宽度
      */
     public static int getDisplayWidth() {
         try {
-            WindowManager wm = (WindowManager) CloudReaderApplication.getInstance().getSystemService(Context.WINDOW_SERVICE);
+            WindowManager wm = (WindowManager) App.getInstance().getSystemService(Context.WINDOW_SERVICE);
             return wm.getDefaultDisplay().getWidth();
         } catch (Exception e) {
             return 1080;
@@ -149,5 +164,25 @@ public class DensityUtil {
         RelativeLayout.LayoutParams lp2 = new RelativeLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (int) height);
         lp2.addRule(RelativeLayout.RIGHT_OF, 1);
         view.setLayoutParams(lp2);
+    }
+
+    /**
+     * 获取状态栏的高度
+     *
+     * @param context
+     * @return
+     */
+    public static int getStatusHeight(Context context) {
+        int statusHeight = -1;
+        try {
+            Class<?> clazz = Class.forName("com.android.internal.R$dimen");
+            Object object = clazz.newInstance();
+            int height = Integer.parseInt(clazz.getField("status_bar_height")
+                    .get(object).toString());
+            statusHeight = context.getApplicationContext().getResources().getDimensionPixelSize(height);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return statusHeight;
     }
 }

@@ -5,22 +5,19 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatEditText;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.jingbin.cloudreader.R;
-import com.example.jingbin.cloudreader.bean.wanandroid.LoginBean;
 import com.example.jingbin.cloudreader.data.UserUtil;
 import com.example.jingbin.cloudreader.data.model.LoginModel;
 import com.example.jingbin.cloudreader.data.room.Injection;
 import com.example.jingbin.cloudreader.data.room.User;
 import com.example.jingbin.cloudreader.data.room.UserDataCallback;
-import com.example.jingbin.cloudreader.http.HttpClient;
+import com.example.jingbin.cloudreader.http.rx.RxBus;
+import com.example.jingbin.cloudreader.http.rx.RxCodeConstants;
 import com.example.jingbin.cloudreader.view.OnLoginListener;
 
-import rx.Observer;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 /**
  * @author jingbin
@@ -33,13 +30,24 @@ public class DialogBuild {
     /**
      * 显示自定义布局
      */
-    public static void showCustom(View v, String content, String buttonText,DialogInterface.OnClickListener clickListener) {
+    public static void showCustom(View v, String content, String buttonText, DialogInterface.OnClickListener clickListener) {
         AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
         View view = View.inflate(v.getContext(), R.layout.title_douban_top, null);
         TextView titleTop = view.findViewById(R.id.title_top);
         titleTop.setText(content);
         builder.setView(view);
         builder.setPositiveButton(buttonText, clickListener);
+        builder.show();
+    }
+
+    public static void showCustom(View v, String content, String positiveText, String negativeText, DialogInterface.OnClickListener clickListener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
+        View view = View.inflate(v.getContext(), R.layout.title_douban_top, null);
+        TextView titleTop = view.findViewById(R.id.title_top);
+        titleTop.setText(content);
+        builder.setView(view);
+        builder.setPositiveButton(positiveText, clickListener);
+        builder.setNegativeButton(negativeText, null);
         builder.show();
     }
 
@@ -61,7 +69,7 @@ public class DialogBuild {
             switch (which) {
                 case 0:
                     BaseTools.copy(content);
-                    ToastUtil.showToast("复制成功");
+                    ToastUtil.showToast("已复制到剪贴板");
                     break;
                 case 1:
                     ShareUtils.share(v.getContext(), content);
@@ -106,7 +114,8 @@ public class DialogBuild {
                         new LoginModel().logout(() -> {
                             Injection.get().deleteAllData();
                             UserUtil.handleLoginFailure();
-                            ToastUtil.showToastLong("退出成功");
+//                            ToastUtil.showToastLong("退出成功");
+                            RxBus.getDefault().post(RxCodeConstants.LOGIN, false);
                         });
                     } else {
                         listener.loginWanAndroid();

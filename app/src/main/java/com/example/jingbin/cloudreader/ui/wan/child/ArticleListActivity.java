@@ -1,31 +1,27 @@
 package com.example.jingbin.cloudreader.ui.wan.child;
 
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
 
 import com.example.jingbin.cloudreader.R;
 import com.example.jingbin.cloudreader.adapter.WanAndroidAdapter;
 import com.example.jingbin.cloudreader.base.BaseActivity;
-import com.example.jingbin.cloudreader.base.BaseListViewModel;
 import com.example.jingbin.cloudreader.bean.wanandroid.HomeListBean;
 import com.example.jingbin.cloudreader.databinding.FragmentWanAndroidBinding;
 import com.example.jingbin.cloudreader.utils.CommonUtils;
-import com.example.jingbin.cloudreader.viewmodel.wan.ArticleListViewModel;
+import com.example.jingbin.cloudreader.utils.RefreshHelper;
 import com.example.jingbin.cloudreader.viewmodel.wan.WanAndroidListViewModel;
-import com.example.xrecyclerview.XRecyclerView;
+
+import me.jingbin.library.ByRecyclerView;
 
 /**
- * 玩安卓分类文章列表、我的收藏文章列表
+ * 玩安卓分类文章列表
  *
  * @author jingbin
  */
-public class ArticleListActivity extends BaseActivity<FragmentWanAndroidBinding> {
+public class ArticleListActivity extends BaseActivity<WanAndroidListViewModel, FragmentWanAndroidBinding> {
 
-    private ArticleListViewModel viewModel;
-    private WanAndroidListViewModel androidViewModel;
     private WanAndroidAdapter mAdapter;
     private int cid = 0;
 
@@ -41,94 +37,64 @@ public class ArticleListActivity extends BaseActivity<FragmentWanAndroidBinding>
     private void getIntentData() {
         cid = getIntent().getIntExtra("cid", 0);
         String chapterName = getIntent().getStringExtra("chapterName");
-
-        if (cid != 0) {
-            setTitle(chapterName);
-            androidViewModel = ViewModelProviders.of(this).get(WanAndroidListViewModel.class);
-            mAdapter.setNoShowChapterName();
-        } else {
-            setTitle("我的收藏");
-            viewModel = ViewModelProviders.of(this).get(ArticleListViewModel.class);
-            mAdapter.setCollectList();
-        }
+        setTitle(chapterName);
+        mAdapter.setNoShowChapterName();
     }
 
     private void loadData() {
-        if (cid != 0) {
-            androidViewModel.getHomeList(cid).observe(this, this::showContent);
-        } else {
-            viewModel.getCollectList().observe(this, this::showContent);
-        }
+        viewModel.getHomeArticleList(cid).observe(this, this::showContent);
+    }
+
+    private void initRefreshView() {
+        RefreshHelper.initLinear(bindingView.xrvWan, true);
+        bindingView.srlWan.setColorSchemeColors(CommonUtils.getColor(R.color.colorTheme));
+        mAdapter = new WanAndroidAdapter(this);
+        bindingView.xrvWan.setAdapter(mAdapter);
+        bindingView.srlWan.setOnRefreshListener(() -> bindingView.srlWan.postDelayed(() -> {
+            viewModel.setPage(0);
+            loadData();
+        }, 500));
+        bindingView.xrvWan.setOnLoadMoreListener(new ByRecyclerView.OnLoadMoreListener() {
+
+            @Override
+            public void onLoadMore() {
+                int page = viewModel.getPage();
+                viewModel.setPage(++page);
+                loadData();
+            }
+        });
     }
 
     private void showContent(HomeListBean homeListBean) {
-        showContentView();
         if (bindingView.srlWan.isRefreshing()) {
             bindingView.srlWan.setRefreshing(false);
         }
 
-        if (homeListBean != null) {
-            if (getViewModel().getPage() == 0) {
-                mAdapter.clear();
+        if (homeListBean != null
+                && homeListBean.getData() != null
+                && homeListBean.getData().getDatas() != null
+                && homeListBean.getData().getDatas().size() > 0) {
+            if (viewModel.getPage() == 0) {
+                showContentView();
+                mAdapter.setNewData(homeListBean.getData().getDatas());
+            } else {
+                mAdapter.addData(homeListBean.getData().getDatas());
+                bindingView.xrvWan.loadMoreComplete();
             }
-            mAdapter.addAll(homeListBean.getData().getDatas());
-            mAdapter.notifyDataSetChanged();
-            bindingView.xrvWan.refreshComplete();
 
         } else {
-            if (getViewModel().getPage() == 0) {
+            if (viewModel.getPage() == 0) {
                 showError();
             } else {
-                bindingView.xrvWan.refreshComplete();
-                bindingView.xrvWan.noMoreLoading();
+                bindingView.xrvWan.loadMoreEnd();
             }
         }
-    }
-
-    private BaseListViewModel getViewModel() {
-        if (viewModel != null) {
-            return viewModel;
-        } else {
-            return androidViewModel;
-        }
-    }
-
-    private void initRefreshView() {
-        bindingView.srlWan.setColorSchemeColors(CommonUtils.getColor(R.color.colorTheme));
-        bindingView.xrvWan.setLayoutManager(new LinearLayoutManager(this));
-        bindingView.xrvWan.setPullRefreshEnabled(false);
-        bindingView.xrvWan.clearHeader();
-        mAdapter = new WanAndroidAdapter(this);
-        bindingView.xrvWan.setAdapter(mAdapter);
-        bindingView.srlWan.setOnRefreshListener(() -> bindingView.srlWan.postDelayed(() -> {
-            bindingView.xrvWan.reset();
-            getViewModel().setPage(0);
-            loadData();
-        }, 500));
-        bindingView.xrvWan.setLoadingListener(new XRecyclerView.LoadingListener() {
-            @Override
-            public void onRefresh() {
-
-            }
-
-            @Override
-            public void onLoadMore() {
-                int page = getViewModel().getPage();
-                getViewModel().setPage(++page);
-                loadData();
-            }
-        });
     }
 
     @Override
     protected void onRefresh() {
         super.onRefresh();
         loadData();
-    }
-
-    public static void start(Context mContext) {
-        Intent intent = new Intent(mContext, ArticleListActivity.class);
-        mContext.startActivity(intent);
     }
 
     public static void start(Context mContext, int cid, String chapterName) {

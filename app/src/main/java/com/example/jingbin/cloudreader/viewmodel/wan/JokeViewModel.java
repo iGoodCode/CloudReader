@@ -1,13 +1,16 @@
 package com.example.jingbin.cloudreader.viewmodel.wan;
 
-import android.arch.lifecycle.ViewModel;
+import android.app.Application;
+import android.arch.lifecycle.MutableLiveData;
+import android.support.annotation.NonNull;
 
+import com.example.jingbin.cloudreader.base.BaseViewModel;
 import com.example.jingbin.cloudreader.bean.wanandroid.DuanZiBean;
 import com.example.jingbin.cloudreader.data.model.JokeModel;
 
 import java.util.List;
 
-import rx.Subscription;
+import io.reactivex.disposables.Disposable;
 
 /**
  * @author jingbin
@@ -15,24 +18,21 @@ import rx.Subscription;
  * @Description 玩安卓ViewModel
  */
 
-public class JokeViewModel extends ViewModel {
+public class JokeViewModel extends BaseViewModel {
 
     private final JokeModel mModel;
-    private WanNavigator.JokeNavigator jokeNavigator;
     private int mPage = 1;
     // 刷新糗事百科
     private boolean isRefreshBK = false;
+    private final MutableLiveData<List<DuanZiBean>> data = new MutableLiveData<>();
 
-    public void setNavigator(WanNavigator.JokeNavigator navigator) {
-        this.jokeNavigator = navigator;
-    }
-
-    public void onDestroy() {
-        navigator = null;
-    }
-
-    public JokeViewModel() {
+    public JokeViewModel(@NonNull Application application) {
+        super(application);
         mModel = new JokeModel();
+    }
+
+    public MutableLiveData<List<DuanZiBean>> getData() {
+        return data;
     }
 
     public void showQSBKList() {
@@ -42,29 +42,17 @@ public class JokeViewModel extends ViewModel {
     private WanNavigator.JokeModelNavigator navigator = new WanNavigator.JokeModelNavigator() {
         @Override
         public void loadSuccess(List<DuanZiBean> lists) {
-            jokeNavigator.showLoadSuccessView();
-            if (isRefreshBK) {
-                if (lists == null || lists.size() <= 0) {
-                    jokeNavigator.loadListFailure();
-                    return;
-                }
-            } else {
-                if (lists == null || lists.size() <= 0) {
-                    jokeNavigator.showListNoMoreLoading();
-                    return;
-                }
-            }
-            jokeNavigator.showAdapterView(lists);
+            data.setValue(lists);
         }
 
         @Override
         public void loadFailed() {
-            jokeNavigator.loadListFailure();
+            data.setValue(null);
         }
 
         @Override
-        public void addSubscription(Subscription subscription) {
-            jokeNavigator.addRxSubscription(subscription);
+        public void addSubscription(Disposable subscription) {
+            addDisposable(subscription);
         }
     };
 

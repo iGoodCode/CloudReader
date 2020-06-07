@@ -1,13 +1,20 @@
 package com.example.jingbin.cloudreader.viewmodel.wan;
 
+import android.app.Application;
+import android.arch.lifecycle.MutableLiveData;
+import android.support.annotation.NonNull;
+
 import com.example.jingbin.cloudreader.base.BaseListViewModel;
 import com.example.jingbin.cloudreader.bean.CollectUrlBean;
 import com.example.jingbin.cloudreader.http.HttpClient;
 
-import rx.Observer;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
+import java.util.Collections;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
+
 
 /**
  * @author jingbin
@@ -17,39 +24,27 @@ import rx.schedulers.Schedulers;
 
 public class CollectLinkModel extends BaseListViewModel {
 
-    private WanNavigator.CollectUrlNavigator navigator;
-
-    public CollectLinkModel(WanNavigator.CollectUrlNavigator navigator) {
-        this.navigator = navigator;
+    public CollectLinkModel(@NonNull Application application) {
+        super(application);
     }
 
-    public void getCollectUrlList() {
-        Subscription subscribe = HttpClient.Builder.getWanAndroidServer().getCollectUrlList()
+    public MutableLiveData<CollectUrlBean> getCollectUrlList() {
+        final MutableLiveData<CollectUrlBean> data = new MutableLiveData<>();
+        Disposable subscribe = HttpClient.Builder.getWanAndroidServer().getCollectUrlList()
                 .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<CollectUrlBean>() {
+                .subscribe(new Consumer<CollectUrlBean>() {
                     @Override
-                    public void onCompleted() {
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        navigator.loadFailure();
-                    }
-
-                    @Override
-                    public void onNext(CollectUrlBean bean) {
-                        navigator.showLoadSuccessView();
-                        if (bean == null || bean.getData() == null || bean.getData().size() <= 0) {
-                            navigator.loadFailure();
-                            return;
+                    public void accept(CollectUrlBean collectUrlBean) throws Exception {
+                        if (collectUrlBean != null && collectUrlBean.getData() != null && collectUrlBean.getData().size() > 0) {
+                            // 对集合中的数据进行倒叙排序
+                            Collections.reverse(collectUrlBean.getData());
+                            data.setValue(collectUrlBean);
+                        } else {
+                            data.setValue(null);
                         }
-                        navigator.showAdapterView(bean);
                     }
-                });
-        navigator.addRxSubscription(subscribe);
-    }
-
-    public void onDestroy() {
-        navigator = null;
+                }, throwable -> data.setValue(null));
+        addDisposable(subscribe);
+        return data;
     }
 }

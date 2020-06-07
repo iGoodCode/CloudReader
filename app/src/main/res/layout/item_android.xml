@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
         <import type="android.text.TextUtils" />
 
-        <import type="com.example.jingbin.cloudreader.utils.TimeUtil" />
+        <import type="com.example.jingbin.cloudreader.utils.DataUtil" />
 
         <variable
             name="resultsBean"
@@ -20,10 +21,10 @@
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="3dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="3dp"
         android:background="?attr/selectableItemBackground">
 
         <LinearLayout
@@ -44,7 +45,6 @@
                 android:scaleType="centerCrop"
                 android:visibility="gone" />
 
-
             <LinearLayout
                 android:id="@+id/ll_welfare_other"
                 android:layout_width="match_parent"
@@ -59,17 +59,21 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_weight="1"
+                    android:ellipsize="end"
                     android:lineSpacingExtra="4dp"
+                    android:maxLines="5"
                     android:text="@{resultsBean.desc}"
                     android:textColor="@color/colorContent"
-                    android:textSize="16sp" />
+                    android:textSize="15sp"
+                    tools:text="描述" />
 
                 <ImageView
                     android:id="@+id/iv_android_pic"
-                    android:layout_width="80dp"
+                    android:layout_width="60dp"
                     android:layout_height="80dp"
                     android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp"
+                    android:background="@color/colorLine"
                     android:scaleType="centerCrop"
                     android:visibility="visible" />
 
@@ -79,6 +83,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:layout_marginBottom="6dp"
                 android:paddingLeft="12dp"
                 android:paddingRight="12dp">
 
@@ -86,9 +91,10 @@
                     android:id="@+id/tv_android_who"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text='@{TextUtils.isEmpty(resultsBean.who)?@string/no_name:resultsBean.who}'
+                    android:text='@{TextUtils.isEmpty(resultsBean.author)?@string/no_name:resultsBean.author}'
                     android:textColor="@color/colorSubtitle"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    tools:text="作者" />
 
                 <TextView
                     android:id="@+id/tv_content_type"
@@ -98,27 +104,23 @@
                     android:text=""
                     android:textColor="@color/colorSubtitle"
                     android:textSize="12sp"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    tools:text=" · 类型"
+                    tools:visibility="visible" />
 
                 <TextView
                     android:id="@+id/tv_android_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
-                    android:text='@{TimeUtil.getTranslateTime(resultsBean.publishedAt)}'
+                    android:text='@{DataUtil.getGanHuoTime(resultsBean.publishedAt)}'
                     android:textColor="@color/colorSubtitle"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    tools:text="10-24"
+                    tools:visibility="visible" />
 
             </RelativeLayout>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1px"
-                android:layout_marginTop="6dp"
-                android:background="@color/colorTransparent" />
-
-            <!--若不使用CardView则使用此分割线-->
-            <!--android:background="@color/colorLineItem"-->
         </LinearLayout>
     </android.support.v7.widget.CardView>
 

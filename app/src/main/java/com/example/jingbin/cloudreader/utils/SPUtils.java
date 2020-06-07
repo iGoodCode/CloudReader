@@ -3,7 +3,7 @@ package com.example.jingbin.cloudreader.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.example.jingbin.cloudreader.app.CloudReaderApplication;
+import com.example.jingbin.cloudreader.app.App;
 import com.example.jingbin.cloudreader.app.Constants;
 
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ public class SPUtils {
      * @param fileName
      */
     private static SharedPreferences getSharedPreference(String fileName) {
-        return CloudReaderApplication.getInstance().getSharedPreferences(fileName, Context.MODE_PRIVATE);
+        return App.getInstance().getSharedPreferences(fileName, Context.MODE_PRIVATE);
     }
 
     /**
@@ -108,7 +108,7 @@ public class SPUtils {
     /**
      * 取出List<String>
      *
-     * @param key     List<String> 对应的key
+     * @param key List<String> 对应的key
      * @return List<String>
      */
     public static List<String> getStrListValue(String key) {
@@ -144,7 +144,7 @@ public class SPUtils {
     /**
      * 清空List<String>所有数据
      *
-     * @param key     List<String>对应的key
+     * @param key List<String>对应的key
      */
     public static void removeStrList(String key) {
         int size = getInt(key + "size", 0);
@@ -171,6 +171,14 @@ public class SPUtils {
 
     public static void setNightMode(boolean nightMode) {
         SPUtils.putBoolean(Constants.KEY_MODE_NIGHT, nightMode);
+    }
+
+    public static boolean isRead() {
+        return SPUtils.getBoolean(Constants.MESSAGE_READ_TIP, false);
+    }
+
+    public static void setRead(boolean isRead) {
+        SPUtils.putBoolean(Constants.MESSAGE_READ_TIP, isRead);
     }
 
 }

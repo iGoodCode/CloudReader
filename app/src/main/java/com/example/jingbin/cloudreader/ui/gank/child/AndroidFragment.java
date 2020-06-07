@@ -3,33 +3,30 @@ package com.example.jingbin.cloudreader.ui.gank.child;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.LinearLayoutManager;
 
-import com.example.jingbin.cloudreader.MainActivity;
 import com.example.jingbin.cloudreader.R;
 import com.example.jingbin.cloudreader.adapter.GankAndroidAdapter;
 import com.example.jingbin.cloudreader.base.BaseFragment;
-import com.example.jingbin.cloudreader.bean.GankIoDataBean;
 import com.example.jingbin.cloudreader.databinding.FragmentAndroidBinding;
-import com.example.jingbin.cloudreader.viewmodel.gank.BigAndroidNavigator;
-import com.example.jingbin.cloudreader.viewmodel.gank.BigAndroidViewModel;
-import com.example.xrecyclerview.XRecyclerView;
+import com.example.jingbin.cloudreader.ui.MainActivity;
+import com.example.jingbin.cloudreader.utils.RefreshHelper;
+import com.example.jingbin.cloudreader.viewmodel.gank.GankViewModel;
 
-import rx.Subscription;
+import me.jingbin.library.ByRecyclerView;
+import me.jingbin.library.decoration.SpacesItemDecoration;
 
 /**
  * 大安卓 fragment
  */
-public class AndroidFragment extends BaseFragment<FragmentAndroidBinding> implements BigAndroidNavigator {
+public class AndroidFragment extends BaseFragment<GankViewModel, FragmentAndroidBinding> {
 
     private static final String TAG = "AndroidFragment";
     private static final String TYPE = "mType";
     private String mType = "Android";
     private boolean mIsPrepared;
     private boolean mIsFirst = true;
-    private GankAndroidAdapter mGankAndroidAdapter;
+    private GankAndroidAdapter adapter;
     private MainActivity activity;
-    private BigAndroidViewModel viewModel;
 
 
     @Override
@@ -63,8 +60,7 @@ public class AndroidFragment extends BaseFragment<FragmentAndroidBinding> implem
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        viewModel = new BigAndroidViewModel(mType);
-        viewModel.setBigAndroidNavigator(this);
+        viewModel.setType(mType);
         initRecyclerView();
         // 准备就绪
         mIsPrepared = true;
@@ -75,28 +71,54 @@ public class AndroidFragment extends BaseFragment<FragmentAndroidBinding> implem
         if (!mIsPrepared || !mIsVisible || !mIsFirst) {
             return;
         }
-        viewModel.loadAndroidData();
+        showLoading();
+        loadAndroidData();
+        mIsFirst = false;
     }
 
     private void initRecyclerView() {
-        mGankAndroidAdapter = new GankAndroidAdapter();
-        bindingView.xrvAndroid.setLayoutManager(new LinearLayoutManager(getActivity()));
-        bindingView.xrvAndroid.setLoadingListener(new XRecyclerView.LoadingListener() {
+        adapter = new GankAndroidAdapter();
+        // 加了分割线，滚动条才会置顶
+        SpacesItemDecoration itemDecoration = new SpacesItemDecoration(activity, SpacesItemDecoration.VERTICAL, 1);
+        itemDecoration.setDrawable(R.drawable.shape_transparent);
+        RefreshHelper.initLinear(bindingView.xrvAndroid, false).addItemDecoration(itemDecoration);
+        bindingView.xrvAndroid.setAdapter(adapter);
+        bindingView.xrvAndroid.setOnRefreshListener(new ByRecyclerView.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 viewModel.setPage(1);
-                viewModel.loadAndroidData();
+                loadAndroidData();
             }
-
+        });
+        bindingView.xrvAndroid.setOnLoadMoreListener(new ByRecyclerView.OnLoadMoreListener() {
             @Override
             public void onLoadMore() {
                 int page = viewModel.getPage();
                 page++;
                 viewModel.setPage(page);
-                viewModel.loadAndroidData();
+                loadAndroidData();
             }
         });
-        bindingView.xrvAndroid.setAdapter(mGankAndroidAdapter);
+    }
+
+    private void loadAndroidData() {
+        viewModel.loadGankData().observe(this, bean -> {
+            if (bean != null && bean.getResults() != null && bean.getResults().size() > 0) {
+                if (viewModel.getPage() == 1) {
+                    showContentView();
+                    adapter.setNewData(bean.getResults());
+                } else {
+                    adapter.addData(bean.getResults());
+                }
+                bindingView.xrvAndroid.loadMoreComplete();
+            } else {
+                if (viewModel.getPage() == 1) {
+                    showError();
+                } else {
+                    bindingView.xrvAndroid.loadMoreEnd();
+                }
+            }
+        });
     }
 
     /**
@@ -104,55 +126,6 @@ public class AndroidFragment extends BaseFragment<FragmentAndroidBinding> implem
      */
     @Override
     protected void onRefresh() {
-        viewModel.loadAndroidData();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        viewModel.onDestroy();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    public void showLoadSuccessView() {
-        showContentView();
-    }
-
-    @Override
-    public void showAdapterView(GankIoDataBean gankIoDataBean) {
-        if (viewModel.getPage() == 1) {
-            mGankAndroidAdapter.clear();
-        }
-        mGankAndroidAdapter.addAll(gankIoDataBean.getResults());
-        mGankAndroidAdapter.notifyDataSetChanged();
-        bindingView.xrvAndroid.refreshComplete();
-
-        if (mIsFirst) {
-            mIsFirst = false;
-        }
-    }
-
-    @Override
-    public void showListNoMoreLoading() {
-        bindingView.xrvAndroid.noMoreLoading();
-    }
-
-    @Override
-    public void showLoadFailedView() {
-        bindingView.xrvAndroid.refreshComplete();
-        // 注意：这里不能写成 mPage == 1，否则会一直显示错误页面
-        if (mGankAndroidAdapter.getItemCount() == 0) {
-            showError();
-        }
-    }
-
-    @Override
-    public void addRxSubscription(Subscription subscription) {
-        addSubscription(subscription);
+        loadAndroidData();
     }
 }
