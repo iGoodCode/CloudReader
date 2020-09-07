@@ -1,18 +1,18 @@
 package com.example.jingbin.cloudreader.base;
 
 import android.annotation.SuppressLint;
-import android.databinding.DataBindingUtil;
-import android.databinding.ViewDataBinding;
+import androidx.databinding.DataBindingUtil;
+import androidx.databinding.ViewDataBinding;
 import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.LayoutRes;
-import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.LayoutRes;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.transition.ArcMotion;
 import android.util.Log;
@@ -35,7 +35,7 @@ import com.example.jingbin.cloudreader.databinding.BaseHeaderTitleBarBinding;
 import com.example.jingbin.cloudreader.utils.CommonUtils;
 import com.example.jingbin.cloudreader.view.CustomChangeBounds;
 import com.example.jingbin.cloudreader.view.MyNestedScrollView;
-import com.example.jingbin.cloudreader.view.statusbar.StatusBarUtil;
+import me.jingbin.bymvvm.utils.StatusBarUtil;
 import com.example.jingbin.cloudreader.view.statue.StatusBarUtils;
 
 import java.lang.reflect.Method;

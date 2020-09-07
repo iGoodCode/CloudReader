@@ -1,22 +1,23 @@
 package com.example.jingbin.cloudreader.utils;
 
 import android.content.DialogInterface;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.AppCompatEditText;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.AppCompatEditText;
+
 import com.example.jingbin.cloudreader.R;
+import com.example.jingbin.cloudreader.app.RxCodeConstants;
 import com.example.jingbin.cloudreader.data.UserUtil;
 import com.example.jingbin.cloudreader.data.model.LoginModel;
-import com.example.jingbin.cloudreader.data.room.Injection;
-import com.example.jingbin.cloudreader.data.room.User;
-import com.example.jingbin.cloudreader.data.room.UserDataCallback;
-import com.example.jingbin.cloudreader.http.rx.RxBus;
-import com.example.jingbin.cloudreader.http.rx.RxCodeConstants;
 import com.example.jingbin.cloudreader.view.OnLoginListener;
+
+import me.jingbin.bymvvm.room.Injection;
+import me.jingbin.bymvvm.room.User;
+import me.jingbin.bymvvm.room.UserDataCallback;
+import me.jingbin.bymvvm.rxbus.RxBus;
 
 
 /**
@@ -69,7 +70,6 @@ public class DialogBuild {
             switch (which) {
                 case 0:
                     BaseTools.copy(content);
-                    ToastUtil.showToast("已复制到剪贴板");
                     break;
                 case 1:
                     ShareUtils.share(v.getContext(), content);

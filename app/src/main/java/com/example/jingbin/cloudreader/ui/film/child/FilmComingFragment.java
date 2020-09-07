@@ -2,16 +2,20 @@ package com.example.jingbin.cloudreader.ui.film.child;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
-import android.support.v7.widget.StaggeredGridLayoutManager;
+
+import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.example.jingbin.cloudreader.R;
 import com.example.jingbin.cloudreader.adapter.FilmComingAdapter;
-import com.example.jingbin.cloudreader.base.BaseFragment;
+
+import me.jingbin.bymvvm.base.BaseFragment;
+
 import com.example.jingbin.cloudreader.bean.ComingFilmBean;
 import com.example.jingbin.cloudreader.bean.moviechild.FilmItemBean;
 import com.example.jingbin.cloudreader.databinding.FragmentWanAndroidBinding;
@@ -23,6 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import me.jingbin.library.ByRecyclerView;
+import me.jingbin.library.view.OnItemFilterClickListener;
 
 /**
  * @author jingbin
@@ -82,9 +87,9 @@ public class FilmComingFragment extends BaseFragment<FilmViewModel, FragmentWanA
         bindingView.xrvWan.setLoadMoreEnabled(true);
         viewModel.bookType.set(mType);
         bindingView.xrvWan.setAdapter(adapter);
-        bindingView.xrvWan.setOnItemClickListener(new ByRecyclerView.OnItemClickListener() {
+        bindingView.xrvWan.setOnItemClickListener(new OnItemFilterClickListener() {
             @Override
-            public void onClick(View v, int position) {
+            public void onSingleClick(View v, int position) {
                 ImageView imageView = v.findViewById(R.id.iv_top_photo);
                 ComingFilmBean.MoviecomingsBean bean = adapter.getItemData(position);
 
@@ -120,18 +125,32 @@ public class FilmComingFragment extends BaseFragment<FilmViewModel, FragmentWanA
     }
 
     private void getHotFilm() {
-        viewModel.getComingFilm().observe(this, new android.arch.lifecycle.Observer<ComingFilmBean>() {
+        viewModel.getComingFilm().observe(this, new androidx.lifecycle.Observer<ComingFilmBean>() {
             @Override
             public void onChanged(@Nullable ComingFilmBean bookBean) {
                 if (bindingView.srlWan.isRefreshing()) {
                     bindingView.srlWan.setRefreshing(false);
                 }
-                if (bookBean != null && bookBean.getMoviecomings() != null && bookBean.getMoviecomings().size() > 0) {
+                boolean isMovieComings = bookBean != null
+                        && bookBean.getData() != null
+                        && bookBean.getData().getMoviecomings() != null
+                        && bookBean.getData().getMoviecomings().size() > 0;
+                boolean isRecommends = bookBean != null
+                        && bookBean.getData() != null
+                        && bookBean.getData().getRecommends() != null
+                        && bookBean.getData().getRecommends().size() > 0
+                        && bookBean.getData().getRecommends().get(0) != null
+                        && bookBean.getData().getRecommends().get(0).getMovies() != null
+                        && bookBean.getData().getRecommends().get(0).getMovies().size() > 0;
+
+                if (isMovieComings || isRecommends) {
                     showContentView();
 
                     ArrayList<ComingFilmBean.MoviecomingsBean> beans = new ArrayList<>();
-                    beans.addAll(bookBean.getAttention());
-                    beans.addAll(bookBean.getMoviecomings());
+                    if (isRecommends) {
+                        beans.addAll(bookBean.getData().getRecommends().get(0).getMovies());
+                    }
+                    beans.addAll(bookBean.getData().getMoviecomings());
                     // 用HashSet 根据id去重 https://www.cnblogs.com/woshimrf/p/java-list-distinct.html
                     Set<ComingFilmBean.MoviecomingsBean> set = new LinkedHashSet<>(beans);
                     beans.clear();
@@ -141,7 +160,11 @@ public class FilmComingFragment extends BaseFragment<FilmViewModel, FragmentWanA
                     bindingView.xrvWan.loadMoreEnd();
                 } else {
                     if (adapter.getItemCount() == 0) {
-                        showError();
+                        if (bookBean != null) {
+                            showEmptyView("暂未发现即将上映的电影");
+                        } else {
+                            showError();
+                        }
                     } else {
                         bindingView.xrvWan.loadMoreEnd();
                     }

@@ -1,11 +1,11 @@
 package com.example.jingbin.cloudreader.viewmodel.wan;
 
 import android.app.Application;
-import android.arch.lifecycle.MutableLiveData;
-import android.support.annotation.NonNull;
+import androidx.lifecycle.MutableLiveData;
+import androidx.annotation.NonNull;
 
 import com.example.jingbin.cloudreader.app.Constants;
-import com.example.jingbin.cloudreader.base.BaseListViewModel;
+import me.jingbin.bymvvm.base.BaseListViewModel;
 import com.example.jingbin.cloudreader.bean.wanandroid.ArticlesBean;
 import com.example.jingbin.cloudreader.bean.wanandroid.BaseResultBean;
 import com.example.jingbin.cloudreader.bean.wanandroid.TreeBean;

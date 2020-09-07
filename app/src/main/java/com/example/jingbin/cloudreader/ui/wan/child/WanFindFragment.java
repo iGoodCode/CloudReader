@@ -1,23 +1,27 @@
 package com.example.jingbin.cloudreader.ui.wan.child;
 
-import android.arch.lifecycle.Observer;
+import androidx.lifecycle.Observer;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
-import android.support.v7.widget.LinearLayoutManager;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.jingbin.cloudreader.R;
 import com.example.jingbin.cloudreader.adapter.WanAndroidAdapter;
 import com.example.jingbin.cloudreader.adapter.WxArticleAdapter;
 import com.example.jingbin.cloudreader.app.Constants;
-import com.example.jingbin.cloudreader.base.BaseFragment;
+import me.jingbin.bymvvm.base.BaseFragment;
 import com.example.jingbin.cloudreader.bean.wanandroid.ArticlesBean;
 import com.example.jingbin.cloudreader.bean.wanandroid.TreeBean;
 import com.example.jingbin.cloudreader.bean.wanandroid.WxarticleItemBean;
 import com.example.jingbin.cloudreader.databinding.FragmentWanFindBinding;
-import com.example.jingbin.cloudreader.http.rx.RxBus;
-import com.example.jingbin.cloudreader.http.rx.RxCodeConstants;
+import me.jingbin.bymvvm.rxbus.RxBus;
+import com.example.jingbin.cloudreader.app.RxCodeConstants;
 import com.example.jingbin.cloudreader.utils.DataUtil;
 import com.example.jingbin.cloudreader.utils.RefreshHelper;
 import com.example.jingbin.cloudreader.utils.SPUtils;
@@ -131,7 +135,7 @@ public class WanFindFragment extends BaseFragment<WanFindViewModel, FragmentWanF
 
     private void onObserveViewModel() {
         // 左侧标题
-        viewModel.getDataTitle().observe(this, new Observer<List<WxarticleItemBean>>() {
+        viewModel.getDataTitle().observe(getViewLifecycleOwner(), new Observer<List<WxarticleItemBean>>() {
             @Override
             public void onChanged(@Nullable List<WxarticleItemBean> dataBeans) {
                 if (dataBeans != null && dataBeans.size() > 0) {
@@ -143,7 +147,7 @@ public class WanFindFragment extends BaseFragment<WanFindViewModel, FragmentWanF
             }
         });
         // 右侧内容
-        viewModel.getData().observe(this, new Observer<List<ArticlesBean>>() {
+        viewModel.getData().observe(getViewLifecycleOwner(), new Observer<List<ArticlesBean>>() {
             @Override
             public void onChanged(@Nullable List<ArticlesBean> list) {
                 showContentView();
@@ -164,7 +168,7 @@ public class WanFindFragment extends BaseFragment<WanFindViewModel, FragmentWanF
                         bindingView.recyclerView.setLoadMoreEnabled(false);
                         bindingView.recyclerView.setRefreshEnabled(false);
                         if (!isAddFooter) {
-                            bindingView.recyclerView.addFooterView(R.layout.layout_loading_empty);
+                            bindingView.recyclerView.addFooterView(LayoutInflater.from(activity).inflate(R.layout.layout_loading_empty, (ViewGroup) bindingView.recyclerView, false));
                             isAddFooter = true;
                         } else {
                             bindingView.recyclerView.setFootViewEnabled(true);

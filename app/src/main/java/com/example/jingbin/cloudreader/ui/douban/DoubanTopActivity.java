@@ -1,15 +1,15 @@
 package com.example.jingbin.cloudreader.ui.douban;
 
-import android.arch.lifecycle.Observer;
+import androidx.lifecycle.Observer;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.StaggeredGridLayoutManager;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.example.jingbin.cloudreader.R;
 import com.example.jingbin.cloudreader.adapter.DouBanTopAdapter;
-import com.example.jingbin.cloudreader.base.BaseActivity;
+import me.jingbin.bymvvm.base.BaseActivity;
 import com.example.jingbin.cloudreader.bean.HotMovieBean;
 import com.example.jingbin.cloudreader.databinding.ActivityDoubanTopBinding;
 import com.example.jingbin.cloudreader.viewmodel.movie.DoubanTopViewModel;

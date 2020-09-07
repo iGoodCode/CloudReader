@@ -2,15 +2,19 @@ package com.example.jingbin.cloudreader.ui.film.child;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
-import android.support.v7.widget.LinearLayoutManager;
+
+import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+
 import android.view.View;
 import android.widget.ImageView;
 
 import com.example.jingbin.cloudreader.R;
 import com.example.jingbin.cloudreader.adapter.FilmAdapter;
-import com.example.jingbin.cloudreader.base.BaseFragment;
+
+import me.jingbin.bymvvm.base.BaseFragment;
+
 import com.example.jingbin.cloudreader.bean.MtimeFilmeBean;
 import com.example.jingbin.cloudreader.bean.moviechild.FilmItemBean;
 import com.example.jingbin.cloudreader.databinding.FragmentWanAndroidBinding;
@@ -18,6 +22,7 @@ import com.example.jingbin.cloudreader.utils.CommonUtils;
 import com.example.jingbin.cloudreader.viewmodel.movie.FilmViewModel;
 
 import me.jingbin.library.ByRecyclerView;
+import me.jingbin.library.view.OnItemFilterClickListener;
 
 /**
  * @author jingbin
@@ -78,9 +83,9 @@ public class FilmShowingFragment extends BaseFragment<FilmViewModel, FragmentWan
         bindingView.xrvWan.setHasFixedSize(true);
         bindingView.xrvWan.setLoadMoreEnabled(true);
         bindingView.xrvWan.setAdapter(adapter);
-        bindingView.xrvWan.setOnItemClickListener(new ByRecyclerView.OnItemClickListener() {
+        bindingView.xrvWan.setOnItemClickListener(new OnItemFilterClickListener() {
             @Override
-            public void onClick(View v, int position) {
+            public void onSingleClick(View v, int position) {
                 ImageView imageView = v.findViewById(R.id.iv_one_photo);
                 FilmItemBean itemData = adapter.getItemData(position);
                 FilmDetailActivity.start(activity, itemData, imageView);
@@ -100,19 +105,23 @@ public class FilmShowingFragment extends BaseFragment<FilmViewModel, FragmentWan
     }
 
     private void getHotFilm() {
-        viewModel.getHotFilm().observe(this, new android.arch.lifecycle.Observer<MtimeFilmeBean>() {
+        viewModel.getHotFilm().observe(this, new androidx.lifecycle.Observer<MtimeFilmeBean>() {
             @Override
             public void onChanged(@Nullable MtimeFilmeBean bookBean) {
                 if (bindingView.srlWan.isRefreshing()) {
                     bindingView.srlWan.setRefreshing(false);
                 }
-                if (bookBean != null && bookBean.getMs() != null && bookBean.getMs().size() > 0) {
+                if (bookBean != null && bookBean.getData() != null && bookBean.getData().getMs() != null && bookBean.getData().getMs().size() > 0) {
                     showContentView();
-                    adapter.setNewData(bookBean.getMs());
+                    adapter.setNewData(bookBean.getData().getMs());
                     bindingView.xrvWan.loadMoreEnd();
                 } else {
                     if (adapter.getItemCount() == 0) {
-                        showError();
+                        if (bookBean != null) {
+                            showEmptyView("暂未发现热映中的电影");
+                        } else {
+                            showError();
+                        }
                     } else {
                         bindingView.xrvWan.loadMoreEnd();
                     }

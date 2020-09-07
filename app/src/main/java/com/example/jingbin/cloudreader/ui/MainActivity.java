@@ -1,18 +1,11 @@
 package com.example.jingbin.cloudreader.ui;
 
-import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.view.ViewPager;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -21,16 +14,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.core.view.GravityCompat;
+import androidx.databinding.DataBindingUtil;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.Observer;
+import androidx.viewpager.widget.ViewPager;
+
 import com.example.jingbin.cloudreader.R;
 import com.example.jingbin.cloudreader.app.ConstantsImageUrl;
-import com.example.jingbin.cloudreader.base.BaseActivity;
 import com.example.jingbin.cloudreader.bean.wanandroid.CoinUserInfoBean;
 import com.example.jingbin.cloudreader.data.UserUtil;
 import com.example.jingbin.cloudreader.databinding.ActivityMainBinding;
 import com.example.jingbin.cloudreader.databinding.NavHeaderMainBinding;
-import com.example.jingbin.cloudreader.http.rx.RxBus;
-import com.example.jingbin.cloudreader.http.rx.RxBusBaseMessage;
-import com.example.jingbin.cloudreader.http.rx.RxCodeConstants;
+import me.jingbin.bymvvm.rxbus.RxBus;
+import me.jingbin.bymvvm.rxbus.RxBusBaseMessage;
+import com.example.jingbin.cloudreader.app.RxCodeConstants;
 import com.example.jingbin.cloudreader.ui.menu.NavAboutActivity;
 import com.example.jingbin.cloudreader.ui.menu.NavAdmireActivity;
 import com.example.jingbin.cloudreader.ui.menu.NavDeedBackActivity;
@@ -50,12 +50,12 @@ import com.example.jingbin.cloudreader.utils.UpdateUtil;
 import com.example.jingbin.cloudreader.view.MyFragmentPagerAdapter;
 import com.example.jingbin.cloudreader.view.OnLoginListener;
 import com.example.jingbin.cloudreader.view.OnMyPageChangeListener;
-import com.example.jingbin.cloudreader.view.statusbar.StatusBarUtil;
-import com.example.jingbin.cloudreader.view.webview.WebViewActivity;
 import com.example.jingbin.cloudreader.viewmodel.wan.MainViewModel;
 
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
+import me.jingbin.bymvvm.base.BaseActivity;
+import me.jingbin.bymvvm.utils.StatusBarUtil;
 
 
 /**

@@ -1,12 +1,12 @@
 package com.example.jingbin.cloudreader.ui.gank.child;
 
 import android.animation.ValueAnimator;
-import android.arch.lifecycle.Observer;
+import androidx.lifecycle.Observer;
 import android.content.Context;
-import android.databinding.DataBindingUtil;
+import androidx.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.LinearLayoutManager;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,23 +17,23 @@ import android.widget.ImageView;
 
 import com.example.jingbin.cloudreader.R;
 import com.example.jingbin.cloudreader.adapter.EverydayAdapter;
-import com.example.jingbin.cloudreader.base.BaseFragment;
+import me.jingbin.bymvvm.base.BaseFragment;
 import com.example.jingbin.cloudreader.bean.AndroidBean;
 import com.example.jingbin.cloudreader.databinding.FragmentEverydayBinding;
 import com.example.jingbin.cloudreader.databinding.HeaderItemEverydayBinding;
-import com.example.jingbin.cloudreader.http.rx.RxBus;
-import com.example.jingbin.cloudreader.http.rx.RxBusBaseMessage;
-import com.example.jingbin.cloudreader.http.rx.RxCodeConstants;
+import me.jingbin.bymvvm.rxbus.RxBus;
+import me.jingbin.bymvvm.rxbus.RxBusBaseMessage;
+import com.example.jingbin.cloudreader.app.RxCodeConstants;
 import com.example.jingbin.cloudreader.utils.DensityUtil;
 import com.example.jingbin.cloudreader.utils.GlideUtil;
 import com.example.jingbin.cloudreader.utils.PerfectClickListener;
-import com.example.jingbin.cloudreader.view.webview.WebViewActivity;
+import com.example.jingbin.cloudreader.ui.WebViewActivity;
 import com.example.jingbin.cloudreader.viewmodel.gank.EverydayViewModel;
 
 import java.util.ArrayList;
 
 import me.jingbin.sbanner.config.OnBannerClickListener;
-import me.jingbin.sbanner.holder.BannerViewHolder;
+import me.jingbin.sbanner.holder.SBannerViewHolder;
 import me.jingbin.sbanner.holder.HolderCreator;
 
 import static com.example.jingbin.cloudreader.viewmodel.gank.EverydayViewModel.getTodayTime;
@@ -124,10 +124,10 @@ public class EverydayFragment extends BaseFragment<EverydayViewModel, FragmentEv
                     mHeaderBinding.banner
                             .setAutoPlay(true)
                             .setOffscreenPageLimit(bean.getImageUrls().size())
-                            .setPages(bean.getImageUrls(), new HolderCreator<BannerViewHolder>() {
+                            .setPages(bean.getImageUrls(), new HolderCreator<SBannerViewHolder>() {
                                 @Override
-                                public BannerViewHolder createViewHolder() {
-                                    return new BannerViewHolder<String>() {
+                                public SBannerViewHolder createViewHolder() {
+                                    return new SBannerViewHolder<String>() {
                                         private ImageView imageView;
 
                                         @Override

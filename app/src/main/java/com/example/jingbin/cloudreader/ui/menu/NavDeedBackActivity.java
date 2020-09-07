@@ -7,14 +7,14 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.example.jingbin.cloudreader.R;
-import com.example.jingbin.cloudreader.base.BaseActivity;
+import me.jingbin.bymvvm.base.BaseActivity;
 import com.example.jingbin.cloudreader.databinding.ActivityNavDeedBackBinding;
 import com.example.jingbin.cloudreader.utils.BaseTools;
 import com.example.jingbin.cloudreader.utils.CommonUtils;
 import com.example.jingbin.cloudreader.utils.PerfectClickListener;
 import com.example.jingbin.cloudreader.utils.ToastUtil;
-import com.example.jingbin.cloudreader.view.webview.WebViewActivity;
-import com.example.jingbin.cloudreader.viewmodel.menu.NoViewModel;
+import com.example.jingbin.cloudreader.ui.WebViewActivity;
+import me.jingbin.bymvvm.base.NoViewModel;
 
 /**
  * @author jingbin
@@ -67,7 +67,6 @@ public class NavDeedBackActivity extends BaseActivity<NoViewModel, ActivityNavDe
                     break;
                 case R.id.tv_qq_group_num:
                     BaseTools.copy(bindingView.tvQqGroupNum.getText().toString());
-                    ToastUtil.showToast("已复制到剪贴板");
                     break;
                 default:
                     break;

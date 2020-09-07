@@ -1,10 +1,10 @@
 package com.example.jingbin.cloudreader.viewmodel.movie;
 
 import android.app.Application;
-import android.arch.lifecycle.MutableLiveData;
-import android.support.annotation.NonNull;
+import androidx.lifecycle.MutableLiveData;
+import androidx.annotation.NonNull;
 
-import com.example.jingbin.cloudreader.base.BaseViewModel;
+import me.jingbin.bymvvm.base.BaseViewModel;
 import com.example.jingbin.cloudreader.bean.HotMovieBean;
 import com.example.jingbin.cloudreader.data.model.OneRepository;
 

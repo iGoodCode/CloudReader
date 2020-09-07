@@ -1,15 +1,8 @@
 package com.example.jingbin.cloudreader.ui.menu;
 
-import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
-import android.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.design.widget.TabLayout;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
 import android.text.Editable;
 import android.text.Html;
 import android.text.TextUtils;
@@ -20,10 +13,16 @@ import android.view.inputmethod.EditorInfo;
 import android.webkit.URLUtil;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.DataBindingUtil;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+
 import com.example.jingbin.cloudreader.R;
 import com.example.jingbin.cloudreader.adapter.CategoryArticleAdapter;
 import com.example.jingbin.cloudreader.adapter.GankAndroidSearchAdapter;
-import com.example.jingbin.cloudreader.base.binding.BaseBindingAdapter;
 import com.example.jingbin.cloudreader.bean.wanandroid.HomeListBean;
 import com.example.jingbin.cloudreader.bean.wanandroid.SearchTagBean;
 import com.example.jingbin.cloudreader.databinding.ActivitySearchBinding;
@@ -32,12 +31,15 @@ import com.example.jingbin.cloudreader.utils.CommonUtils;
 import com.example.jingbin.cloudreader.utils.DialogBuild;
 import com.example.jingbin.cloudreader.utils.ToastUtil;
 import com.example.jingbin.cloudreader.view.byview.NeteaseLoadMoreView;
-import com.example.jingbin.cloudreader.view.statusbar.StatusBarUtil;
-import com.example.jingbin.cloudreader.view.webview.WebViewActivity;
+import com.example.jingbin.cloudreader.ui.WebViewActivity;
 import com.example.jingbin.cloudreader.viewmodel.wan.SearchViewModel;
+import com.google.android.material.internal.FlowLayout;
+import com.google.android.material.tabs.TabLayout;
 
 import java.util.List;
 
+import me.jingbin.bymvvm.adapter.BaseBindingAdapter;
+import me.jingbin.bymvvm.utils.StatusBarUtil;
 import me.jingbin.library.ByRecyclerView;
 import me.jingbin.library.decoration.SpacesItemDecoration;
 
@@ -58,7 +60,7 @@ public class SearchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_search);
         StatusBarUtil.setColor(this, CommonUtils.getColor(R.color.colorTheme), 0);
-        viewModel = ViewModelProviders.of(this).get(SearchViewModel.class);
+        viewModel = new ViewModelProvider(this).get(SearchViewModel.class);
         binding.setViewModel(viewModel);
         initRefreshView();
         initView();
@@ -322,7 +324,7 @@ public class SearchActivity extends AppCompatActivity {
     /**
      * 显示热门搜索或历史搜索标签
      */
-    private <T> void showTagView(android.support.design.internal.FlowLayout flowLayout, final List<T> beanList) {
+    private <T> void showTagView(FlowLayout flowLayout, final List<T> beanList) {
         flowLayout.removeAllViews();
         for (int i = 0; i < beanList.size(); i++) {
             TextView textView = (TextView) View.inflate(flowLayout.getContext(), R.layout.layout_navi_tag, null);

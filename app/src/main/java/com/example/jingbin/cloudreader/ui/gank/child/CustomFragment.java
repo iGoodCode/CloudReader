@@ -1,8 +1,8 @@
 package com.example.jingbin.cloudreader.ui.gank.child;
 
-import android.arch.lifecycle.Observer;
+import androidx.lifecycle.Observer;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +11,7 @@ import android.widget.TextView;
 import com.cocosw.bottomsheet.BottomSheet;
 import com.example.jingbin.cloudreader.R;
 import com.example.jingbin.cloudreader.adapter.GankAndroidAdapter;
-import com.example.jingbin.cloudreader.base.BaseFragment;
+import me.jingbin.bymvvm.base.BaseFragment;
 import com.example.jingbin.cloudreader.bean.GankIoDataBean;
 import com.example.jingbin.cloudreader.databinding.FragmentAndroidBinding;
 import com.example.jingbin.cloudreader.utils.RefreshHelper;
@@ -84,7 +84,7 @@ public class CustomFragment extends BaseFragment<GankViewModel, FragmentAndroidB
     }
 
     private void loadCustomData() {
-        viewModel.loadGankData().observe(this, new Observer<GankIoDataBean>() {
+        viewModel.loadGankData().observe(getViewLifecycleOwner(), new Observer<GankIoDataBean>() {
             @Override
             public void onChanged(@Nullable GankIoDataBean bean) {
                 bindingView.xrvAndroid.setStateViewEnabled(false);

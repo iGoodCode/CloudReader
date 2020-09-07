@@ -2,7 +2,6 @@ package com.example.jingbin.cloudreader.adapter;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,27 +10,29 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.example.jingbin.cloudreader.R;
 import com.example.jingbin.cloudreader.app.App;
-import com.example.jingbin.cloudreader.base.binding.BaseBindingHolder;
 import com.example.jingbin.cloudreader.bean.AndroidBean;
 import com.example.jingbin.cloudreader.databinding.ItemEverydayOneBinding;
 import com.example.jingbin.cloudreader.databinding.ItemEverydayThreeBinding;
 import com.example.jingbin.cloudreader.databinding.ItemEverydayTitleBinding;
 import com.example.jingbin.cloudreader.databinding.ItemEverydayTwoBinding;
-import com.example.jingbin.cloudreader.http.rx.RxBus;
-import com.example.jingbin.cloudreader.http.rx.RxCodeConstants;
+import me.jingbin.bymvvm.rxbus.RxBus;
+import com.example.jingbin.cloudreader.app.RxCodeConstants;
 import com.example.jingbin.cloudreader.utils.DensityUtil;
 import com.example.jingbin.cloudreader.utils.DialogBuild;
 import com.example.jingbin.cloudreader.utils.GlideUtil;
 import com.example.jingbin.cloudreader.utils.PerfectClickListener;
-import com.example.jingbin.cloudreader.view.webview.WebViewActivity;
+import com.example.jingbin.cloudreader.ui.WebViewActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import me.jingbin.bymvvm.adapter.BaseBindingHolder;
 import me.jingbin.library.adapter.BaseByRecyclerViewAdapter;
 import me.jingbin.library.adapter.BaseByViewHolder;
 

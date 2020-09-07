@@ -1,12 +1,13 @@
 package com.example.jingbin.cloudreader.bean.moviechild;
 
-import android.databinding.BaseObservable;
-import android.databinding.Bindable;
+import androidx.databinding.BaseObservable;
+import androidx.databinding.Bindable;
 
-import com.example.http.ParamNames;
 import com.example.jingbin.cloudreader.BR;
 
 import java.io.Serializable;
+
+import me.jingbin.bymvvm.http.ParamNames;
 
 /**
  * Created by jingbin on 2016/11/25.

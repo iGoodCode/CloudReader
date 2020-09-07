@@ -1,7 +1,5 @@
 package com.example.jingbin.cloudreader.http;
 
-import com.example.http.HttpUtils;
-import com.example.http.utils.BuildFactory;
 import com.example.jingbin.cloudreader.bean.CoinBean;
 import com.example.jingbin.cloudreader.bean.CollectUrlBean;
 import com.example.jingbin.cloudreader.bean.ComingFilmBean;
@@ -31,6 +29,8 @@ import java.util.List;
 
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
+import me.jingbin.bymvvm.http.HttpUtils;
+import me.jingbin.bymvvm.utils.BuildFactory;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
@@ -127,13 +127,13 @@ public interface HttpClient {
     /**
      * 时光网热映电影
      */
-    @GET("Showtime/LocationMovies.api?locationId=561")
+    @GET("showing/movies.api?locationId=561")
     Observable<MtimeFilmeBean> getHotFilm();
 
     /**
      * 时光网即将上映电影
      */
-    @GET("Movie/MovieComingNew.api?locationId=561")
+    @GET("movie/mobilemoviecoming.api?locationId=561")
     Observable<ComingFilmBean> getComingFilm();
 
     /**

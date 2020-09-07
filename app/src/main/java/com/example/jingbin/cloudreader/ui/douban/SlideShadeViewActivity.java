@@ -2,15 +2,15 @@ package com.example.jingbin.cloudreader.ui.douban;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.databinding.DataBindingUtil;
+import androidx.databinding.DataBindingUtil;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.ActivityOptionsCompat;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,12 +31,12 @@ import com.example.jingbin.cloudreader.utils.CommonUtils;
 import com.example.jingbin.cloudreader.utils.DebugUtil;
 import com.example.jingbin.cloudreader.utils.StringFormatUtil;
 import com.example.jingbin.cloudreader.view.MyNestedScrollView;
-import com.example.jingbin.cloudreader.view.statusbar.StatusBarUtil;
+import me.jingbin.bymvvm.utils.StatusBarUtil;
 import com.example.jingbin.cloudreader.view.statue.StatusBarUtils;
 
 import jp.wasabeef.glide.transformations.BlurTransformation;
 
-import static com.example.jingbin.cloudreader.view.statusbar.StatusBarUtil.getStatusBarHeight;
+import static me.jingbin.bymvvm.utils.StatusBarUtil.getStatusBarHeight;
 
 /**
  * （已使用：{@link OneMovieDetailActivity} 替代）

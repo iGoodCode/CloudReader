@@ -1,11 +1,11 @@
 package com.example.jingbin.cloudreader.viewmodel.movie;
 
 import android.app.Application;
-import android.arch.lifecycle.MutableLiveData;
-import android.databinding.ObservableField;
-import android.support.annotation.NonNull;
+import androidx.lifecycle.MutableLiveData;
+import androidx.databinding.ObservableField;
+import androidx.annotation.NonNull;
 
-import com.example.jingbin.cloudreader.base.BaseViewModel;
+import me.jingbin.bymvvm.base.BaseViewModel;
 import com.example.jingbin.cloudreader.bean.ComingFilmBean;
 import com.example.jingbin.cloudreader.bean.MtimeFilmeBean;
 import com.example.jingbin.cloudreader.bean.book.BookBean;
@@ -69,7 +69,7 @@ public class FilmViewModel extends BaseViewModel {
 
     public MutableLiveData<MtimeFilmeBean> getHotFilm() {
         final MutableLiveData<MtimeFilmeBean> data = new MutableLiveData<>();
-        Disposable subscribe = HttpClient.Builder.getMtimeServer().getHotFilm()
+        Disposable subscribe = HttpClient.Builder.getMtimeTicketServer().getHotFilm()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<MtimeFilmeBean>() {
@@ -89,7 +89,7 @@ public class FilmViewModel extends BaseViewModel {
 
     public MutableLiveData<ComingFilmBean> getComingFilm() {
         final MutableLiveData<ComingFilmBean> data = new MutableLiveData<>();
-        Disposable subscribe = HttpClient.Builder.getMtimeServer().getComingFilm()
+        Disposable subscribe = HttpClient.Builder.getMtimeTicketServer().getComingFilm()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<ComingFilmBean>() {

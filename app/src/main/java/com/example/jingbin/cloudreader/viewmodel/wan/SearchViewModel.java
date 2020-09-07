@@ -1,19 +1,18 @@
 package com.example.jingbin.cloudreader.viewmodel.wan;
 
 import android.app.Application;
-import android.arch.lifecycle.MutableLiveData;
-import android.databinding.BindingAdapter;
-import android.databinding.ObservableField;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.AppCompatEditText;
+import androidx.lifecycle.MutableLiveData;
+import androidx.databinding.BindingAdapter;
+import androidx.databinding.ObservableField;
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatEditText;
 import android.text.TextUtils;
 
-import com.example.jingbin.cloudreader.base.BaseListViewModel;
+import me.jingbin.bymvvm.base.BaseListViewModel;
 import com.example.jingbin.cloudreader.bean.GankIoDataBean;
 import com.example.jingbin.cloudreader.bean.wanandroid.HomeListBean;
 import com.example.jingbin.cloudreader.bean.wanandroid.SearchTagBean;
 import com.example.jingbin.cloudreader.http.HttpClient;
-import com.example.jingbin.cloudreader.http.cache.ACache;
 import com.example.jingbin.cloudreader.utils.SPUtils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;

@@ -1,11 +1,11 @@
 package com.example.jingbin.cloudreader.viewmodel.movie;
 
 import android.app.Application;
-import android.arch.lifecycle.MutableLiveData;
-import android.databinding.ObservableField;
-import android.support.annotation.NonNull;
+import androidx.lifecycle.MutableLiveData;
+import androidx.databinding.ObservableField;
+import androidx.annotation.NonNull;
 
-import com.example.jingbin.cloudreader.base.BaseViewModel;
+import me.jingbin.bymvvm.base.BaseViewModel;
 import com.example.jingbin.cloudreader.bean.book.BookBean;
 import com.example.jingbin.cloudreader.http.HttpClient;
 
